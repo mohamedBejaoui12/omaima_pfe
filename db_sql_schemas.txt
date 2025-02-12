@@ -1,0 +1,37 @@
+users table : 
+CREATE TABLE users (
+  cin INT(8) NOT NULL,
+  nom VARCHAR(255) NOT NULL,
+  poste VARCHAR(255) DEFAULT NULL,         
+experience VARCHAR(255) DEFAULT NULL,
+  disponibilitee BOOLEAN DEFAULT TRUE,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  num_tele VARCHAR(20) DEFAULT NULL,
+  role ENUM('0','1','2') NOT NULL DEFAULT '2',         
+  PRIMARY KEY (cin)
+);
+Competences table :
+CREATE TABLE Competences (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom_competence VARCHAR(255) NOT NULL UNIQUE
+);
+projects table :
+CREATE TABLE Projets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom_projet VARCHAR(255) NOT NULL,
+    description TEXT,
+    competence_id INT,
+    delai DATE NOT NULL,
+    budget DECIMAL(10,2) NOT NULL,
+    statut ENUM('en cours', 'terminé', 'annulé') NOT NULL,
+);
+
+projet_competence table :
+CREATE TABLE `projet_competence` (
+  `projet_id` int(11) NOT NULL,
+  `competence_id` int(11) NOT NULL,
+  PRIMARY KEY (`projet_id`, `competence_id`),
+  CONSTRAINT `fk_projet` FOREIGN KEY (`projet_id`) REFERENCES `projets` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_competence` FOREIGN KEY (`competence_id`) REFERENCES `competences` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
