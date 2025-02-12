@@ -8,6 +8,7 @@ import ManageUsersPage from "./pages/admin/pages/ManageUsersPage";
 import ChefDashboard from "./pages/chef_de_projet/chefDeProjetDashboard";
 import MembreDashboard from "./pages/membre/membre";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
+import { Toaster } from 'react-hot-toast';
 
 // Role constants for clarity
 const ROLES = {
@@ -18,6 +19,26 @@ const ROLES = {
 
 function App() {
   return (
+    <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          success: {
+            duration: 3000,
+            style: {
+              background: '#4CAF50',
+              color: 'white',
+            },
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: '#F44336',
+              color: 'white',
+            },
+          },
+        }}
+      />
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
@@ -55,6 +76,7 @@ function App() {
         />
       </Routes>
     </Router>
+    </>
   );
 }
 
