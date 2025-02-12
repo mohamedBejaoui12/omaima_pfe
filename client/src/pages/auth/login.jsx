@@ -50,29 +50,64 @@ function Login() {
     e.preventDefault();
     
     try {
-      const response = await axios.post('http://localhost:5000/login', {
+      const response = await axios.post('http://localhost:5000/auth/login', {
         cin,
         password,
         role
       });
 
+      console.log('Full login response:', response.data); // Detailed logging
+
       if (response.data.success) {
+        // Log token details
+        console.log('Token:', response.data.token);
+        console.log('User:', response.data.user);
+
         // Store token and user info in cookies
-        Cookies.set('token', response.data.token, { expires: 1 }); // 1 day expiry
-        Cookies.set('user', JSON.stringify(response.data.user), { expires: 1 });
+        Cookies.set('token', response.data.token, { 
+          expires: 1,  // 1 day expiry
+          secure: process.env.NODE_ENV === 'production', // Use secure in production
+          sameSite: 'strict' 
+        }); 
+        Cookies.set('user', JSON.stringify(response.data.user), { 
+          expires: 1,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict'
+        });
         
         // Navigate based on role and pass CIN
         // Check if there was a previous location before redirecting
         const from = location.state?.from?.pathname || '/';
         switch(response.data.user.role) {
           case '0':
-            navigate('/admin', { state: { cin: response.data.user.cin, from }, replace: true });
+            navigate('/admin', { 
+              state: { 
+                cin: response.data.user.cin, 
+                from,
+                token: response.data.token // Pass token for debugging
+              }, 
+              replace: true 
+            });
             break;
           case '1':
-            navigate('/chef-de-projet', { state: { cin: response.data.user.cin, from }, replace: true });
+            navigate('/chef-de-projet', { 
+              state: { 
+                cin: response.data.user.cin, 
+                from,
+                token: response.data.token 
+              }, 
+              replace: true 
+            });
             break;
           case '2':
-            navigate('/membre', { state: { cin: response.data.user.cin, from }, replace: true });
+            navigate('/membre', { 
+              state: { 
+                cin: response.data.user.cin, 
+                from,
+                token: response.data.token 
+              }, 
+              replace: true 
+            });
             break;
           default:
             navigate(from, { replace: true });
@@ -82,8 +117,21 @@ function Login() {
         setError(response.data.message || 'Login failed');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError('An error occurred during login');
+      console.error('Full login error:', err);
+      
+      // More detailed error handling
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response:', err.response.data);
+        setError(err.response.data.message || 'Login failed');
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError('An error occurred during login');
+      }
     }
   };
 

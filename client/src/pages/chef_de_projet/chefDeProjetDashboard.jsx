@@ -10,13 +10,29 @@ function ChefDashboard() {
   const { cin } = location.state || {};
 
   const handleLogout = () => {
-    // Remove cookies
-    Cookies.remove('token');
-    Cookies.remove('user');
-    // Redirect to login
-    navigate('/login');
+    try {
+      // Remove all authentication-related cookies
+      Cookies.remove('token');
+      Cookies.remove('user');
+  
+      // Clear any other potential cookies
+      const allCookies = Cookies.get();
+      Object.keys(allCookies).forEach(cookieName => {
+        if (cookieName.includes('auth') || cookieName.includes('token')) {
+          Cookies.remove(cookieName);
+        }
+      });
+  
+      // Show success message
+      message.success('Logged out successfully');
+  
+      // Redirect to login page
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Logout error:', error);
+      message.error('Failed to log out');
+    }
   };
-
   return (
     <Container>
       <Box sx={{ my: 4 }}>

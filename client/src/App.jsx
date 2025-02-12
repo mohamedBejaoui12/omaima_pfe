@@ -1,7 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from "./pages/auth/login";
-import AdminDashboard from "./pages/admin/adminDashboard";
+import AdminLayout from "./pages/admin/components/AdminLayout";
+import AdminDashboard from "./pages/admin/pages/adminDashboard";
+import AddMemberPage from "./pages/admin/pages/AddMemberPage";
+import ManageUsersPage from "./pages/admin/pages/ManageUsersPage";
 import ChefDashboard from "./pages/chef_de_projet/chefDeProjetDashboard";
 import MembreDashboard from "./pages/membre/membre";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
@@ -19,14 +22,20 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
+        
         <Route 
           path="/admin" 
           element={
             <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
-              <AdminDashboard />
+              <AdminLayout />
             </ProtectedRoute>
-          } 
-        />
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="add-member" element={<AddMemberPage />} />
+          <Route path="manage-users" element={<ManageUsersPage />} />
+        </Route>
+
         <Route 
           path="/chef-de-projet" 
           element={
@@ -35,6 +44,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        
         <Route 
           path="/membre" 
           element={
@@ -43,8 +53,6 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        {/* Redirect to login if no matching route */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
