@@ -55,6 +55,11 @@ router.get('/projects/:id',
   adminOnly,
   adminController.getProjectById
 );
+router.get('/projects/:id/competences',
+  authenticateToken,
+  adminOnly,
+  adminController.getProjectCompetences
+);
 
 router.put('/projects/:id',
   authenticateToken,
@@ -66,6 +71,25 @@ router.delete('/projects/:id',
   authenticateToken,
   adminOnly,
   adminController.deleteProject
+);
+
+// Project Manager Routes
+router.post('/projects/assign-manager',
+  authenticateToken,
+  adminOnly,
+  adminController.assignProjectManager
+);
+
+router.get('/projects/:projet_id/manager',
+  authenticateToken,
+  adminOnly,
+  adminController.getProjectManager
+);
+
+router.delete('/projects/:projet_id/manager',
+  authenticateToken,
+  adminOnly,
+  adminController.removeProjectManager
 );
 
 // Competence management routes

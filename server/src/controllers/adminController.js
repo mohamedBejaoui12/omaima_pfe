@@ -229,20 +229,55 @@ exports.getAllProjects = async (req, res) => {
 exports.getProjectById = async (req, res) => {
   try {
     const [project] = await pool.execute(`
-      SELECT p.*, c.nom_competence 
-      FROM Projets p 
-      LEFT JOIN Competences c ON p.competence_id = c.id 
-      WHERE p.id = ?
+      SELECT * 
+      FROM Projets 
+      WHERE id = ?
     `, [req.params.id]);
 
     if (project.length === 0) {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    res.json(project[0]);
+    // Fetch project competences separately
+    const [competences] = await pool.execute(`
+      SELECT c.* 
+      FROM Competences c
+      JOIN projet_competence pc ON c.id = pc.competence_id
+      WHERE pc.projet_id = ?
+    `, [req.params.id]);
+
+    // Attach competences to the project
+    const projectWithCompetences = {
+      ...project[0],
+      competences: competences
+    };
+
+    res.json(projectWithCompetences);
   } catch (error) {
     console.error('Get project by id error:', error);
-    res.status(500).json({ message: 'Error fetching project' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Error fetching project', 
+      error: error.message,
+      stack: error.stack 
+    });
+  }
+};
+
+exports.getProjectCompetences = async (req, res) => {
+  try {
+    const [competences] = await pool.execute(`
+      SELECT c.* 
+      FROM Competences c
+      JOIN ProjetCompetences pc ON c.id = pc.competence_id
+      WHERE pc.projet_id = ?
+    `, [req.params.id]);
+
+    res.json(competences);
+  } catch (error) {
+    console.error('Get project competences error:', error);
+    res.status(500).json({ message: 'Error fetching project competences' });
   }
 };
 
@@ -326,6 +361,137 @@ exports.deleteProject = async (req, res) => {
       message: 'Error deleting project',
       error: error.message,
       stack: error.stack 
+    });
+  }
+};
+
+// Project Manager Management Functions
+exports.assignProjectManager = async (req, res) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const { projet_id, manager_cin } = req.body;
+
+    // Validate input
+    if (!projet_id || !manager_cin) {
+      return res.status(400).json({ message: 'Project ID and Manager CIN are required' });
+    }
+
+    // Check if project exists
+    const [projectExists] = await connection.query(
+      'SELECT id FROM Projets WHERE id = ?',
+      [projet_id]
+    );
+
+    if (projectExists.length === 0) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Check if user exists and is a valid manager
+    const [userExists] = await connection.query(
+      'SELECT cin, role FROM users WHERE cin = ?',
+      [manager_cin]
+    );
+
+    if (userExists.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Validate that the user is a manager (role = "1")
+    if (userExists[0].role !== "1") {
+      return res.status(400).json({ 
+        message: 'Only users with manager role can be assigned as project managers' 
+      });
+    }
+
+    // Check if the manager is already assigned to another project
+    const [existingProjectAssignment] = await connection.query(
+      'SELECT projet_id FROM ProjetManagers WHERE manager_cin = ?',
+      [manager_cin]
+    );
+
+    if (existingProjectAssignment.length > 0) {
+      return res.status(400).json({ 
+        message: 'This manager is already assigned to another project',
+        existingProjectId: existingProjectAssignment[0].projet_id
+      });
+    }
+
+    // Remove any existing project manager for this project
+    await connection.query(
+      'DELETE FROM ProjetManagers WHERE projet_id = ?',
+      [projet_id]
+    );
+
+    // Assign new project manager
+    const [result] = await connection.query(
+      'INSERT INTO ProjetManagers (projet_id, manager_cin) VALUES (?, ?)',
+      [projet_id, manager_cin]
+    );
+
+    await connection.commit();
+
+    res.status(201).json({ 
+      message: 'Project manager assigned successfully',
+      assignmentId: result.insertId 
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error assigning project manager:', error);
+    res.status(500).json({ 
+      message: 'Error assigning project manager',
+      error: error.message 
+    });
+  } finally {
+    connection.release();
+  }
+};
+
+exports.getProjectManager = async (req, res) => {
+  try {
+    const { projet_id } = req.params;
+
+    const [projectManager] = await pool.execute(`
+      SELECT u.*, pm.date_assignation
+      FROM ProjetManagers pm
+      JOIN users u ON pm.manager_cin = u.cin
+      WHERE pm.projet_id = ?
+    `, [projet_id]);
+
+    if (projectManager.length === 0) {
+      return res.status(404).json({ message: 'No project manager assigned' });
+    }
+
+    res.json(projectManager[0]);
+  } catch (error) {
+    console.error('Error fetching project manager:', error);
+    res.status(500).json({ 
+      message: 'Error fetching project manager',
+      error: error.message 
+    });
+  }
+};
+
+exports.removeProjectManager = async (req, res) => {
+  try {
+    const { projet_id } = req.params;
+
+    const [result] = await pool.execute(
+      'DELETE FROM ProjetManagers WHERE projet_id = ?',
+      [projet_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'No project manager found to remove' });
+    }
+
+    res.json({ message: 'Project manager removed successfully' });
+  } catch (error) {
+    console.error('Error removing project manager:', error);
+    res.status(500).json({ 
+      message: 'Error removing project manager',
+      error: error.message 
     });
   }
 };

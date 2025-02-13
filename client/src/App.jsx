@@ -10,6 +10,7 @@ import MembreDashboard from "./pages/membre/membre";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
 import { Toaster } from 'react-hot-toast';
 import ManageProjects from "./pages/admin/pages/ManageProjects";
+import ProjectDetails from "./pages/admin/pages/ProjectDetails";
 
 // Role constants for clarity
 const ROLES = {
@@ -57,6 +58,7 @@ function App() {
           <Route path="add-member" element={<AddMemberPage />} />
           <Route path="manage-users" element={<ManageUsersPage />} />
           <Route path="manage-projects" element={<ManageProjects />} />
+          <Route path="projects/:id" element={<ProjectDetails />} />
         </Route>
 
         <Route 
