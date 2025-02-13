@@ -3,7 +3,7 @@ const pool = require('../config/database');
 const getUserInfo = async (req, res) => {
   try {
     const [rows] = await pool.execute(
-      'SELECT cin, nom, poste, experience, disponibilitee, email, num_tele, role FROM users WHERE cin = ?', 
+      'SELECT cin, nom, poste, experience, disponibilitee, email, num_tele, role, imageUrl FROM users WHERE cin = ?', 
       [req.user.cin]
     );
 
