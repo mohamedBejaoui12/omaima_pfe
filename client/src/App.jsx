@@ -11,6 +11,8 @@ import ProtectedRoute from "./pages/components/ProtectedRoute";
 import { Toaster } from 'react-hot-toast';
 import ManageProjects from "./pages/admin/pages/ManageProjects";
 import ProjectDetails from "./pages/admin/pages/ProjectDetails";
+import UpdateProfile from "./pages/membre/UpdateProfile";
+import CompetencesPage from "./pages/admin/pages/CompetencesPage";
 
 // Role constants for clarity
 const ROLES = {
@@ -58,6 +60,7 @@ function App() {
           <Route path="add-member" element={<AddMemberPage />} />
           <Route path="manage-users" element={<ManageUsersPage />} />
           <Route path="manage-projects" element={<ManageProjects />} />
+          <Route path="manage-competences" element={<CompetencesPage />} />
           <Route path="projects/:id" element={<ProjectDetails />} />
         </Route>
 
@@ -75,6 +78,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[ROLES.MEMBRE]}>
               <MembreDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/membre/profile" 
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.MEMBRE]}>
+              <UpdateProfile />
             </ProtectedRoute>
           } 
         />

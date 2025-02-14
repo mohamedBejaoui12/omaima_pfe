@@ -502,7 +502,10 @@ exports.addCompetence = async (req, res) => {
     const { nom_competence } = req.body;
 
     if (!nom_competence) {
-      return res.status(400).json({ message: 'Competence name is required' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Competence name is required' 
+      });
     }
 
     // Check if competence already exists
@@ -512,7 +515,10 @@ exports.addCompetence = async (req, res) => {
     );
 
     if (existingCompetence.length > 0) {
-      return res.status(400).json({ message: 'Competence already exists' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Competence already exists' 
+      });
     }
 
     // Insert new competence
@@ -522,13 +528,17 @@ exports.addCompetence = async (req, res) => {
     );
 
     res.status(201).json({
+      success: true,
       message: 'Competence added successfully',
       competenceId: result.insertId
     });
 
   } catch (error) {
     console.error('Add competence error:', error);
-    res.status(500).json({ message: 'Error adding competence' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error adding competence' 
+    });
   }
 };
 
@@ -551,7 +561,10 @@ exports.updateCompetence = async (req, res) => {
     const competenceId = req.params.id;
 
     if (!nom_competence) {
-      return res.status(400).json({ message: 'Competence name is required' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Competence name is required' 
+      });
     }
 
     // Check if competence exists
@@ -561,7 +574,10 @@ exports.updateCompetence = async (req, res) => {
     );
 
     if (existingCompetence.length === 0) {
-      return res.status(404).json({ message: 'Competence not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Competence not found' 
+      });
     }
 
     // Check if new name already exists for another competence
@@ -571,7 +587,10 @@ exports.updateCompetence = async (req, res) => {
     );
 
     if (duplicateCompetence.length > 0) {
-      return res.status(400).json({ message: 'A competence with this name already exists' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'A competence with this name already exists' 
+      });
     }
 
     // Update competence
@@ -580,45 +599,93 @@ exports.updateCompetence = async (req, res) => {
       [nom_competence, competenceId]
     );
 
-    res.json({ message: 'Competence updated successfully' });
+    res.json({ 
+      success: true,
+      message: 'Competence updated successfully' 
+    });
   } catch (error) {
     console.error('Update competence error:', error);
-    res.status(500).json({ message: 'Error updating competence' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error updating competence' 
+    });
   }
 };
 
 exports.deleteCompetence = async (req, res) => {
+  const connection = await pool.getConnection();
   try {
+    await connection.beginTransaction();
+
     const competenceId = req.params.id;
 
     // Check if competence exists
-    const [existingCompetence] = await pool.execute(
+    const [existingCompetence] = await connection.execute(
       'SELECT * FROM Competences WHERE id = ?',
       [competenceId]
     );
 
     if (existingCompetence.length === 0) {
-      return res.status(404).json({ message: 'Competence not found' });
+      await connection.rollback();
+      return res.status(404).json({ 
+        success: false,
+        message: 'Competence not found' 
+      });
     }
 
     // Check if competence is being used by any project
-    const [relatedProjects] = await pool.execute(
-      'SELECT * FROM Projets WHERE competence_id = ?',
+    const [relatedProjects] = await connection.execute(
+      'SELECT * FROM projet_competence WHERE competence_id = ?',
       [competenceId]
     );
 
     if (relatedProjects.length > 0) {
+      await connection.rollback();
       return res.status(400).json({ 
+        success: false,
         message: 'Cannot delete competence as it is being used by one or more projects' 
       });
     }
 
-    // Delete competence
-    await pool.execute('DELETE FROM Competences WHERE id = ?', [competenceId]);
+    // Delete from projet_competence (just in case)
+    await connection.execute(
+      'DELETE FROM projet_competence WHERE competence_id = ?', 
+      [competenceId]
+    );
 
-    res.json({ message: 'Competence deleted successfully' });
+    // Delete competence
+    const [deleteResult] = await connection.execute(
+      'DELETE FROM Competences WHERE id = ?', 
+      [competenceId]
+    );
+
+    if (deleteResult.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(500).json({ 
+        success: false,
+        message: 'Failed to delete competence' 
+      });
+    }
+
+    await connection.commit();
+    res.json({ 
+      success: true,
+      message: 'Competence deleted successfully' 
+    });
   } catch (error) {
+    if (connection) {
+      await connection.rollback();
+    }
     console.error('Delete competence error:', error);
-    res.status(500).json({ message: 'Error deleting competence' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error deleting competence',
+      error: error.message,
+      details: error.stack 
+    });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 };

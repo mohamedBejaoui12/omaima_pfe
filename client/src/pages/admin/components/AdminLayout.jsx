@@ -70,6 +70,11 @@ const AdminLayout = () => {
       icon: <ProjectOutlined />,
       label: <Link to="/admin/manage-projects">Manage Projects</Link>
     },
+    {
+      key: 'manage-competences',
+      icon: <ProjectOutlined />,
+      label: <Link to="/admin/manage-competences">Manage Competences</Link>
+    },
   ];
 
   const userMenu = (

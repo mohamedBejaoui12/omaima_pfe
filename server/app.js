@@ -11,6 +11,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const profileRoutes = require('./src/routes/profileRoutes');
+const competenceRoutes = require('./src/routes/competenceRoutes');
 
 // Create uploads directory if it doesn't exist
 const fs = require('fs');
@@ -48,6 +49,7 @@ app.get('/test-image/:filename', (req, res) => {
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', competenceRoutes);
 app.use('/profile', profileRoutes);
 
 app.get('/', (req, res) => {
