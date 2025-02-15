@@ -13,6 +13,9 @@ import ManageProjects from "./pages/admin/pages/ManageProjects";
 import ProjectDetails from "./pages/admin/pages/ProjectDetails";
 import UpdateProfile from "./pages/membre/UpdateProfile";
 import CompetencesPage from "./pages/admin/pages/CompetencesPage";
+import ChefDeProjetLayout from "./pages/chef_de_projet/pages/ChefDeProjetLayout";
+import MemberSuggestionModal from "./pages/chef_de_projet/pages/MemberSuggestionModal";
+import ManageCompetencies from "./pages/membre/ManageCompetencies";
 
 // Role constants for clarity
 const ROLES = {
@@ -65,14 +68,17 @@ function App() {
         </Route>
 
         <Route 
-          path="/chef-de-projet" 
-          element={
-            <ProtectedRoute allowedRoles={[ROLES.CHEF_DE_PROJET]}>
-              <ChefDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        
+  path="/chef-de-projet" 
+  element={
+    <ProtectedRoute allowedRoles={[ROLES.CHEF_DE_PROJET]}>
+      <ChefDeProjetLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route index element={<ChefDashboard />} />
+  <Route path="suggest-members" element={<MemberSuggestionModal />} />
+  {/* You can add more nested routes here */}
+</Route>
         <Route 
           path="/membre" 
           element={
@@ -81,6 +87,8 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route path="/manage-competencies" element={<ManageCompetencies />} />
+
         <Route 
           path="/membre/profile" 
           element={

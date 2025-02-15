@@ -16,6 +16,7 @@ import {
   MenuItem
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -175,6 +176,9 @@ function MembreDashboard() {
             >
               <MenuItem onClick={handleProfile}>Profile</MenuItem>
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              <MenuItem component={Link} to="/manage-competencies">
+  Manage Competencies
+</MenuItem>
             </Menu>
           </div>
         </Toolbar>

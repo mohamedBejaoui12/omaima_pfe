@@ -24,7 +24,7 @@ function Login() {
 
   useEffect(() => {
     // Check if there's a stored token
-    const token = Cookies.get('token');projet_competence
+    const token = Cookies.get('token');
     const user = Cookies.get('user');
 
     if (token && user) {

@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Paper, Typography, Box, TextField, Button, CircularProgress, Grid } from '@mui/material';
+import { 
+  Container, Paper, Typography, Box, TextField, Button, 
+  CircularProgress, Grid, Select, MenuItem, InputLabel, 
+  FormControl, Chip, Stack 
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -16,6 +21,13 @@ const UpdateProfile = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [currentImage, setCurrentImage] = useState(null);
+
+  // New state for competencies
+  const [competencies, setCompetencies] = useState([]);
+  const [newCompetency, setNewCompetency] = useState({
+    name: '',
+    proficiencyLevel: 'Beginner'
+  });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -48,6 +60,24 @@ const UpdateProfile = () => {
 
     fetchUserData();
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchUserCompetencies = async () => {
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.get('http://localhost:5000/profile/competencies', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        setCompetencies(response.data.competencies || []);
+      } catch (error) {
+        console.error('Error fetching competencies:', error);
+      }
+    };
+
+    if (userInfo) {
+      fetchUserCompetencies();
+    }
+  }, [userInfo]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -148,6 +178,56 @@ const UpdateProfile = () => {
     }
   };
 
+  const handleAddCompetency = async () => {
+    if (!newCompetency.name.trim()) {
+      toast.error('Competency name cannot be empty');
+      return;
+    }
+
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.post(
+        'http://localhost:5000/profile/add-competency', 
+        newCompetency, 
+        {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setCompetencies([...competencies, response.data.competency]);
+        setNewCompetency({ name: '', proficiencyLevel: 'Beginner' });
+        toast.success('Competency added successfully');
+      }
+    } catch (error) {
+      console.error('Error adding competency:', error);
+      toast.error(error.response?.data?.message || 'Failed to add competency');
+    }
+  };
+
+  const handleDeleteCompetency = async (competencyName) => {
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.delete(
+        `http://localhost:5000/profile/delete-competency/${competencyName}`, 
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.success) {
+        setCompetencies(competencies.filter(comp => comp.competence_name !== competencyName));
+        toast.success('Competency removed successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting competency:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete competency');
+    }
+  };
+
   if (!userInfo) {
     return (
       <Container maxWidth="sm">
@@ -173,7 +253,7 @@ const UpdateProfile = () => {
                 Personal Details
               </Typography>
               <TextField
-              disabled
+                disabled
                 fullWidth
                 label="CIN"
                 value={userInfo.cin}
@@ -181,7 +261,7 @@ const UpdateProfile = () => {
                 InputProps={{ readOnly: true }}
               />
               <TextField
-              disabled
+                disabled
                 fullWidth
                 label="Name"
                 value={userInfo.nom}
@@ -189,7 +269,7 @@ const UpdateProfile = () => {
                 InputProps={{ readOnly: true }}
               />
               <TextField
-              disabled
+                disabled
                 fullWidth
                 label="Email"
                 value={userInfo.email}
@@ -197,7 +277,7 @@ const UpdateProfile = () => {
                 InputProps={{ readOnly: true }}
               />
               <TextField
-              disabled
+                disabled
                 fullWidth
                 label="Phone"
                 value={userInfo.num_tele || 'Not specified'}
@@ -205,7 +285,7 @@ const UpdateProfile = () => {
                 InputProps={{ readOnly: true }}
               />
               <TextField
-              disabled
+                disabled
                 fullWidth
                 label="Position"
                 value={userInfo.poste || 'Not specified'}
@@ -213,7 +293,7 @@ const UpdateProfile = () => {
                 InputProps={{ readOnly: true }}
               />
               <TextField
-              disabled
+                disabled
                 fullWidth
                 label="Experience"
                 value={userInfo.experience || 'Not specified'}
@@ -221,7 +301,7 @@ const UpdateProfile = () => {
                 InputProps={{ readOnly: true }}
               />
               <TextField
-              disabled
+                disabled
                 fullWidth
                 label="Availability"
                 value={userInfo.disponibilitee ? 'Available' : 'Not Available'}
@@ -327,6 +407,62 @@ const UpdateProfile = () => {
             </form>
           </Grid>
         </Grid>
+
+        {/* Competency Management Section */}
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Manage Competencies
+          </Typography>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Competency Name"
+                value={newCompetency.name}
+                onChange={(e) => setNewCompetency(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl fullWidth>
+                <InputLabel>Proficiency Level</InputLabel>
+                <Select
+                  value={newCompetency.proficiencyLevel}
+                  label="Proficiency Level"
+                  onChange={(e) => setNewCompetency(prev => ({ ...prev, proficiencyLevel: e.target.value }))}
+                >
+                  <MenuItem value="Beginner">Beginner</MenuItem>
+                  <MenuItem value="Intermediate">Intermediate</MenuItem>
+                  <MenuItem value="Advanced">Advanced</MenuItem>
+                  <MenuItem value="Expert">Expert</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={2}>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleAddCompetency}
+              >
+                Add Competency
+              </Button>
+            </Grid>
+          </Grid>
+
+          {/* Competencies List */}
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={1}>
+              {competencies.map((comp) => (
+                <Grid item key={comp.competence_name}>
+                  <Chip
+                    label={`${comp.competence_name} (${comp.proficiency_level})`}
+                    onDelete={() => handleDeleteCompetency(comp.competence_name)}
+                    deleteIcon={<DeleteIcon />}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        </Box>
       </Paper>
     </Container>
   );

@@ -12,6 +12,8 @@ const userRoutes = require('./src/routes/userRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const profileRoutes = require('./src/routes/profileRoutes');
 const competenceRoutes = require('./src/routes/competenceRoutes');
+const projectManagerRoutes = require('./src/routes/projectManagerRoutes');
+
 
 // Create uploads directory if it doesn't exist
 const fs = require('fs');
@@ -52,10 +54,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/admin', competenceRoutes);
 app.use('/profile', profileRoutes);
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the backend!' });
-});
+app.use('/api/project-manager', projectManagerRoutes);
+
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
+module.exports = app;

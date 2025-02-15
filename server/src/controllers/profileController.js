@@ -117,6 +117,112 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// Get user competencies
+const getUserCompetencies = async (req, res) => {
+  const { cin } = req.user;
+
+  try {
+    const [competencies] = await pool.execute(
+      'SELECT competence_name, proficiency_level, created_at FROM user_competencies WHERE user_cin = ?', 
+      [cin]
+    );
+
+    res.json({
+      success: true,
+      competencies
+    });
+  } catch (error) {
+    console.error('Error fetching user competencies:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching competencies'
+    });
+  }
+};
+
+// Add a new competency
+const addUserCompetency = async (req, res) => {
+  const { cin } = req.user;
+  const { name, proficiencyLevel } = req.body;
+
+  if (!name || !proficiencyLevel) {
+    return res.status(400).json({
+      success: false,
+      message: 'Competency name and proficiency level are required'
+    });
+  }
+
+  try {
+    // Check if competency already exists for this user
+    const [existingCompetency] = await pool.execute(
+      'SELECT * FROM user_competencies WHERE user_cin = ? AND competence_name = ?', 
+      [cin, name]
+    );
+
+    if (existingCompetency.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Competency already exists'
+      });
+    }
+
+    // Insert new competency
+    await pool.execute(
+      'INSERT INTO user_competencies (user_cin, competence_name, proficiency_level) VALUES (?, ?, ?)', 
+      [cin, name, proficiencyLevel]
+    );
+
+    res.json({
+      success: true,
+      competency: { 
+        user_cin: cin, 
+        competence_name: name, 
+        proficiency_level: proficiencyLevel 
+      }
+    });
+  } catch (error) {
+    console.error('Error adding user competency:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error adding competency'
+    });
+  }
+};
+
+// Delete a competency
+const deleteUserCompetency = async (req, res) => {
+  const { cin } = req.user;
+  const { competencyName } = req.params;
+
+  try {
+    const [result] = await pool.execute(
+      'DELETE FROM user_competencies WHERE user_cin = ? AND competence_name = ?', 
+      [cin, competencyName]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Competency not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Competency removed successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting user competency:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error removing competency'
+    });
+  }
+};
+
 module.exports = {
-  updateProfile
+  updateProfile,
+  getUserCompetencies,
+  addUserCompetency,
+  deleteUserCompetency
 };
