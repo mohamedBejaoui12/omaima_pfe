@@ -329,14 +329,13 @@ const ProjectDetails = () => {
             <Col span={12}>
               <Form.Item
                 name="statut"
-                label="Status"
-                rules={[{ required: true, message: 'Please select status' }]}
+                label="Project Status"
+                rules={[{ required: true, message: 'Please select project status' }]}
               >
-                <Select>
-                  <Option value="Pending">Pending</Option>
-                  <Option value="In Progress">In Progress</Option>
-                  <Option value="Completed">Completed</Option>
-                  <Option value="On Hold">On Hold</Option>
+                <Select placeholder="Select Project Status">
+                  <Option value="en cours">En Cours</Option>
+                  <Option value="terminé">Terminé</Option>
+                  <Option value="annulé">Annulé</Option>
                 </Select>
               </Form.Item>
             </Col>

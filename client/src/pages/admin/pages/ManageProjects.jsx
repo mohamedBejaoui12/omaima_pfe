@@ -3,7 +3,6 @@ import {
   Table, 
   Button, 
   message,
-  Tag,
   Modal,
   Form,
   Input,
@@ -140,13 +139,27 @@ const ManageProjects = () => {
       dataIndex: 'statut',
       key: 'statut',
       render: (status) => {
-        const colorMap = {
-          'In Progress': 'blue',
-          'Completed': 'green',
-          'Pending': 'orange',
-          'On Hold': 'red'
+        const statusConfig = {
+          'en cours': { color: 'green', text: 'En Cours' },
+          'terminé': { color: 'red', text: 'Terminé' },
+          'annulé': { color: 'gray', text: 'Annulé' }
         };
-        return <Tag color={colorMap[status] || 'default'}>{status || 'Unknown'}</Tag>;
+        
+        const config = statusConfig[status] || { color: 'default', text: status };
+        
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div 
+              style={{ 
+                width: '10px', 
+                height: '10px', 
+                borderRadius: '50%', 
+                backgroundColor: config.color 
+              }} 
+            />
+            <span>{config.text}</span>
+          </div>
+        );
       }
     },
     {
@@ -224,10 +237,9 @@ const ManageProjects = () => {
             rules={[{ required: true, message: 'Please select status' }]}
           >
             <Select>
-              <Option value="Pending">Pending</Option>
-              <Option value="In Progress">In Progress</Option>
-              <Option value="Completed">Completed</Option>
-              <Option value="On Hold">On Hold</Option>
+              <Option value="en cours">En Cours</Option>
+              <Option value="terminé">Terminé</Option>
+              <Option value="annulé">Annulé</Option>
             </Select>
           </Form.Item>
 

@@ -24,7 +24,7 @@ function Login() {
 
   useEffect(() => {
     // Check if there's a stored token
-    const token = Cookies.get('token');
+    const token = Cookies.get('token');projet_competence
     const user = Cookies.get('user');
 
     if (token && user) {
@@ -32,7 +32,7 @@ function Login() {
       // Redirect based on stored user role
       switch(parsedUser.role) {
         case '0':
-          navigate('/admin', { state: { cin: parsedUser.cin }, replace: true });
+          navigate('/admin/dashboard', { state: { cin: parsedUser.cin }, replace: true });
           break;
         case '1':
           navigate('/chef-de-projet', { state: { cin: parsedUser.cin }, replace: true });
@@ -80,7 +80,7 @@ function Login() {
         const from = location.state?.from?.pathname || '/';
         switch(response.data.user.role) {
           case '0':
-            navigate('/admin', { 
+            navigate('/admin/dashboard', { 
               state: { 
                 cin: response.data.user.cin, 
                 from,
