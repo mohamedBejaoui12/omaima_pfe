@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 15, 2025 at 10:15 PM
+-- Generation Time: Feb 16, 2025 at 06:29 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -61,7 +61,7 @@ CREATE TABLE `projetmanagers` (
 --
 
 INSERT INTO `projetmanagers` (`id`, `projet_id`, `manager_cin`, `date_assignation`) VALUES
-(2, 2, 12345678, '2025-02-13 12:54:08');
+(3, 1, 5, '2025-02-16 17:06:40');
 
 -- --------------------------------------------------------
 
@@ -134,11 +134,12 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`cin`, `poste`, `experience`, `disponibilitee`, `email`, `password`, `num_tele`, `role`, `nom`, `imageUrl`) VALUES
-(11223344, 'web developer', '1 year', 1, 'ahmed@gmail.com', '$2a$10$tP8UyKL89eVxpA4PBPHnWukfbElK3P.UzYyeGIpG/alR1B1pg9I3q', '90640476', '2', 'ahmed test', '/uploads/profiles/profile-11223344-1739442302677-736547922.png'),
-(12312312, 'web developer', NULL, 1, 'test@gmail.com', '$2a$10$6dT0orYqt7dwzKnIOkb.NOUPxJDd1HRh7JDMIndnBcXOT/ibvpJoq', NULL, '2', 'test 1', '/uploads/profiles/profile-12312312-1739550282110-595775068.jpg'),
-(12345678, 'web developer', NULL, 1, 'omaima@gmail.com', '$2a$10$IBwVXCwxsbHJrkiSvab85uKFFjF/SZ7APEnBsRPb5oIQDh0x/oPTK', '50062502', '1', 'omaima omaima', ''),
-(14521465, 'web developer', NULL, 1, 'hama@gmail.com', '$2a$10$NokOVik8RRwReHbyNI/AseolzyNmUe75s38Wzrbslt.3RqrmZAKDG', NULL, '0', 'hama hama', ''),
-(87654321, 'designer', NULL, 1, 'employee@gmail.com', '$2a$10$M.kJkLkgp7WfbWohl1J7ze1vhqc6k3WKPEpOZ3fVRmeeq2soFKAWS', '12345678', '2', 'employee', '');
+(1, 'web developer', NULL, 1, 'test1@gmail.com', '$2a$10$sLQvNahC/oMxH23xIqMb9OsQZlY/8pWw0AvUuqreLYT3LA36iQdFa', NULL, '2', 'test 1', NULL),
+(2, 'web developer', NULL, 1, 'test2@gmail.com', '$2a$10$NdcQPLX1EdxUsyW2tMbDLO9.luw9zCA2zyISVI2vvp2za4iDZCtjy', NULL, '2', 'test2', NULL),
+(3, 'web developer', NULL, 1, 'test3@gmail.com', '$2a$10$HG3oxkhLrNdNKLI8oqwCq.LtGC9ereRsxpx9dgBx5eng.kHx/T41q', NULL, '2', 'test3', NULL),
+(4, 'web developer', NULL, 1, 'test4@gmail.com', '$2a$10$v8aYImBBIrlCmU3USP/w7OqTJIgvSZApypRIszVNPUBCj8aa4AdOi', NULL, '2', 'test4', NULL),
+(5, 'manager', NULL, 1, 'Manager@gmail.com', '$2a$10$iRlJA3HDmsq3YD/53o6you3rhNmI0L5ObkLxVQVfBaG9fD.AcS84K', NULL, '1', 'Manager', NULL),
+(14521465, 'web developer', NULL, 1, 'hama@gmail.com', '$2a$10$NokOVik8RRwReHbyNI/AseolzyNmUe75s38Wzrbslt.3RqrmZAKDG', NULL, '0', 'hama hama', '');
 
 -- --------------------------------------------------------
 
@@ -158,10 +159,38 @@ CREATE TABLE `user_competencies` (
 --
 
 INSERT INTO `user_competencies` (`user_cin`, `competence_name`, `proficiency_level`, `created_at`) VALUES
-(87654321, 'Express js', 'Intermediate', '2025-02-15 18:56:14'),
-(87654321, 'MySql', 'Beginner', '2025-02-15 18:56:20'),
-(87654321, 'Node js', 'Intermediate', '2025-02-15 18:56:06'),
-(87654321, 'React Js', 'Intermediate', '2025-02-15 18:52:44');
+(1, 'Java', 'Advanced', '2025-02-16 17:08:14'),
+(1, 'JavaScript ', 'Intermediate', '2025-02-16 17:07:54'),
+(1, 'MongoDB', 'Intermediate', '2025-02-16 17:09:06'),
+(1, 'MySQL', 'Expert', '2025-02-16 17:08:39'),
+(1, 'Python ', 'Advanced', '2025-02-16 17:07:43'),
+(1, 'SQLite', 'Advanced', '2025-02-16 17:08:56'),
+(2, 'AWS', 'Advanced', '2025-02-16 17:09:55'),
+(2, 'C++ ', 'Intermediate', '2025-02-16 17:11:34'),
+(2, 'Docker', 'Intermediate', '2025-02-16 17:10:12'),
+(2, 'Express.js', 'Advanced', '2025-02-16 17:09:43'),
+(2, 'Flutter', 'Advanced', '2025-02-16 17:10:31'),
+(2, 'JavaScript ', 'Advanced', '2025-02-16 17:11:09'),
+(2, 'Kotlin ', 'Intermediate', '2025-02-16 17:10:25'),
+(2, 'Node Js', 'Advanced', '2025-02-16 17:11:40'),
+(2, 'PHP ', 'Advanced', '2025-02-16 17:10:42'),
+(2, 'React Js', 'Advanced', '2025-02-16 17:11:16'),
+(3, 'Big Data', 'Intermediate', '2025-02-16 17:13:30'),
+(3, 'Flask', 'Intermediate', '2025-02-16 17:13:25'),
+(3, 'Machin Learning', 'Beginner', '2025-02-16 17:13:47'),
+(3, 'Node Js', 'Intermediate', '2025-02-16 17:12:55'),
+(3, 'PHP', 'Advanced', '2025-02-16 17:13:57'),
+(3, 'Python', 'Advanced', '2025-02-16 17:13:06'),
+(3, 'React Js', 'Intermediate', '2025-02-16 17:13:00'),
+(4, 'Adobe XD', 'Intermediate', '2025-02-16 17:15:52'),
+(4, 'Angular', 'Beginner', '2025-02-16 17:17:27'),
+(4, 'Figma ', 'Expert', '2025-02-16 17:15:36'),
+(4, 'Framer ', 'Advanced', '2025-02-16 17:16:03'),
+(4, 'Framer Motion', 'Intermediate', '2025-02-16 17:16:18'),
+(4, 'JavaScript', 'Advanced', '2025-02-16 17:16:38'),
+(4, 'React Js', 'Beginner', '2025-02-16 17:16:23'),
+(4, 'Three.js', 'Advanced', '2025-02-16 17:16:54'),
+(4, 'Vue.js', 'Advanced', '2025-02-16 17:17:13');
 
 --
 -- Indexes for dumped tables
@@ -222,7 +251,7 @@ ALTER TABLE `competences`
 -- AUTO_INCREMENT for table `projetmanagers`
 --
 ALTER TABLE `projetmanagers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `projets`
