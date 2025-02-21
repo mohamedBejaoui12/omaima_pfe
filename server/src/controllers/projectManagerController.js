@@ -395,3 +395,96 @@ await connection.query(
     if (connection) connection.release();
   }
 };
+exports.getProjectMembers = async (req, res) => {
+  const {projectId } = req.body;
+
+  let connection;
+  try {
+    connection = await db.getConnection();
+    
+    // Get all users except admins (role = "2" for employees)
+    const [users] = await connection.query(
+      'SELECT cin, nom, email, role, poste, num_tele,imageUrl FROM users,projet_users WHERE users.cin = projet_users.user_cin and projet_users.projet_id = ?',
+      [projectId]
+    );
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Get Users Error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch users',
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal Server Error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+exports.removeAssignedMember = async (req, res) => {
+  const { memberId, projectId } = req.body;
+  const userCin = req.user.cin; // Get the authenticated user's CIN
+  let connection;
+
+  try {
+    connection = await db.getConnection();
+
+    // First verify if the authenticated user is the project manager using the projetmanagers table
+    const [projectManager] = await connection.query(
+      'SELECT * FROM projetmanagers WHERE projet_id = ? AND manager_cin = ?',
+      [projectId, userCin]
+    );
+
+    if (projectManager.length === 0) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Unauthorized: Only the project manager can remove members' 
+      });
+    }
+
+    // Validate member exists (using cin instead of id)
+    const [memberCheck] = await connection.query(
+      'SELECT * FROM projet_users WHERE projet_id = ? AND user_cin = ?', 
+      [projectId, memberId]
+    );
+
+    if (memberCheck.length === 0) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Member not found in this project' 
+      });
+    }
+
+    // Cannot remove yourself from the project
+    if (memberId === userCin) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Project manager cannot remove themselves from the project' 
+      });
+    }
+
+    // Proceed to remove member
+    await connection.query(
+      'DELETE FROM projet_users WHERE projet_id = ? AND user_cin = ?',
+      [projectId, memberId]
+    );
+    
+    await connection.query(
+      'UPDATE users SET disponibilitee = 1 WHERE cin = ?',
+      [memberId]
+    );
+
+    res.status(200).json({ 
+      success: true,
+      message: 'Member removed successfully',
+      member: memberCheck[0]
+    });
+  } catch (error) {
+    console.error('Remove Member Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to remove member',
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal Server Error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+};

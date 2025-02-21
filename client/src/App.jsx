@@ -17,6 +17,7 @@ import ChefDeProjetLayout from "./pages/chef_de_projet/pages/ChefDeProjetLayout"
 import MemberSuggestionModal from "./pages/chef_de_projet/pages/MemberSuggestionModal";
 import ManageCompetencies from "./pages/membre/ManageCompetencies";
 import AsignMembersPage from "./pages/chef_de_projet/pages/AssignMembersPage";
+import MyProjectMember from "./pages/chef_de_projet/pages/MyProjectMember";
 
 // Role constants for clarity
 const ROLES = {
@@ -79,6 +80,7 @@ function App() {
   <Route index element={<ChefDashboard />} />
   <Route path="suggest-members" element={<MemberSuggestionModal />} />
   <Route path="all-users" element={<AsignMembersPage />} />
+  <Route path="members" element={<MyProjectMember />} />
   {/* You can add more nested routes here */}
 </Route>
         <Route 

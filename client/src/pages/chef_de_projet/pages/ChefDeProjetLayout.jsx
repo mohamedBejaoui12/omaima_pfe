@@ -23,10 +23,11 @@ const ChefDeProjetLayout = () => {
       icon: <UserAddOutlined />,
       label: <Link to="/chef-de-projet/suggest-members">Suggest Members</Link>
     },
+
     {
-      key: 'all-users',
+      key: 'members',
       icon: <UserAddOutlined />,
-      label: <Link to="/chef-de-projet/all-users">All Users</Link>
+      label: <Link to="/chef-de-projet/members">My Project Members</Link>
     }
   ];
 
