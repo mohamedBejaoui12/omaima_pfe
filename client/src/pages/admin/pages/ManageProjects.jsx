@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, 
-  Button, 
+import {
+  Table,
+  Button,
   message,
   Modal,
   Form,
   Input,
   InputNumber,
   Select,
-  DatePicker
+  DatePicker,
 } from 'antd';
-import { 
-  EyeOutlined,
-  PlusOutlined
-} from '@ant-design/icons';
+import { EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
@@ -37,19 +34,16 @@ const ManageProjects = () => {
   const fetchProjects = async () => {
     try {
       const token = Cookies.get('token');
-      
+
       if (!token) {
         message.error('No authentication token found. Please log in again.');
         return;
       }
 
       const response = await axios.get('http://localhost:5000/api/admin/projects', {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       setProjects(response.data);
     } catch (error) {
       console.error('Fetch projects error:', error);
@@ -60,19 +54,16 @@ const ManageProjects = () => {
   const fetchCompetences = async () => {
     try {
       const token = Cookies.get('token');
-      
+
       if (!token) {
         message.error('No authentication token found. Please log in again.');
         return;
       }
 
       const response = await axios.get('http://localhost:5000/api/admin/competences', {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       setCompetences(response.data);
     } catch (error) {
       console.error('Fetch competences error:', error);
@@ -93,7 +84,7 @@ const ManageProjects = () => {
   const onFinishAdd = async (values) => {
     try {
       const token = Cookies.get('token');
-      
+
       if (!token) {
         message.error('No authentication token found. Please log in again.');
         return;
@@ -102,16 +93,13 @@ const ManageProjects = () => {
       const formattedValues = {
         ...values,
         delai: values.delai?.format('YYYY-MM-DD'),
-        competence_ids: values.competence_ids || []
+        competence_ids: values.competence_ids || [],
       };
 
       await axios.post('http://localhost:5000/api/admin/projects', formattedValues, {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       message.success('Project added successfully');
       setAddModalVisible(false);
       addForm.resetFields();
@@ -132,7 +120,7 @@ const ManageProjects = () => {
       title: 'Deadline',
       dataIndex: 'delai',
       key: 'delai',
-      render: (delai) => delai ? new Date(delai).toLocaleDateString() : 'N/A'
+      render: (delai) => delai ? new Date(delai).toLocaleDateString() : 'N/A',
     },
     {
       title: 'Status',
@@ -140,62 +128,95 @@ const ManageProjects = () => {
       key: 'statut',
       render: (status) => {
         const statusConfig = {
-          'en cours': { color: 'green', text: 'En Cours' },
-          'terminé': { color: 'red', text: 'Terminé' },
-          'annulé': { color: 'gray', text: 'Annulé' }
+          'en cours': { color: '#1890ff', text: 'En Cours' },
+          'terminé': { color: '#52c41a', text: 'Terminé' },
+          'annulé': { color: '#ff4d4f', text: 'Annulé' },
         };
-        
-        const config = statusConfig[status] || { color: 'default', text: status };
-        
+
+        const config = statusConfig[status] || { color: '#d9d9d9', text: status };
+
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div 
-              style={{ 
-                width: '10px', 
-                height: '10px', 
-                borderRadius: '50%', 
-                backgroundColor: config.color 
-              }} 
+            <div
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                backgroundColor: config.color,
+              }}
             />
             <span>{config.text}</span>
           </div>
         );
-      }
+      },
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Button 
-          icon={<EyeOutlined />} 
+        <Button
+          icon={<EyeOutlined />}
           onClick={() => navigate(`/admin/projects/${record.id}`)}
+          style={{
+            background: '#1890ff',
+            borderColor: '#1890ff',
+            color: '#fff',
+            borderRadius: '4px',
+          }}
         >
           View Details
         </Button>
-      )
-    }
+      ),
+    },
   ];
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h1>Manage Projects</h1>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
+    <div style={{ padding: '24px' }}>
+      {/* Header Section */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '24px',
+        }}
+      >
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1890ff' }}>Manage Projects</h1>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
           onClick={() => setAddModalVisible(true)}
+          style={{
+            background: '#1890ff',
+            borderColor: '#1890ff',
+            color: '#fff',
+            borderRadius: '4px',
+          }}
         >
           Add Project
         </Button>
       </div>
-      
-      <Table 
-        columns={columns} 
-        dataSource={projects} 
+
+      {/* Projects Table */}
+      <Table
+        columns={columns}
+        dataSource={projects}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+          position: ['bottomCenter'],
+        }}
+        bordered
+        style={{
+          borderRadius: '16px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden',
+        }}
       />
 
+      {/* Add Project Modal */}
       <Modal
         title="Add New Project"
         visible={addModalVisible}
@@ -206,13 +227,14 @@ const ManageProjects = () => {
           form={addForm}
           layout="vertical"
           onFinish={onFinishAdd}
+          style={{ marginTop: '24px' }}
         >
           <Form.Item
             name="nom_projet"
             label="Project Name"
             rules={[{ required: true, message: 'Please input project name' }]}
           >
-            <Input />
+            <Input placeholder="Enter project name" />
           </Form.Item>
 
           <Form.Item
@@ -220,7 +242,7 @@ const ManageProjects = () => {
             label="Project Description"
             rules={[{ required: true, message: 'Please input project description' }]}
           >
-            <TextArea rows={4} />
+            <TextArea rows={4} placeholder="Enter project description" />
           </Form.Item>
 
           <Form.Item
@@ -236,7 +258,7 @@ const ManageProjects = () => {
             label="Status"
             rules={[{ required: true, message: 'Please select status' }]}
           >
-            <Select>
+            <Select placeholder="Select project status">
               <Option value="en cours">En Cours</Option>
               <Option value="terminé">Terminé</Option>
               <Option value="annulé">Annulé</Option>
@@ -248,11 +270,12 @@ const ManageProjects = () => {
             label="Budget"
             rules={[{ required: true, message: 'Please input project budget' }]}
           >
-            <InputNumber 
-              style={{ width: '100%' }} 
-              min={0} 
-              formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={value => value.replace(/\$\s?|(,*)/g, '')}
+            <InputNumber
+              style={{ width: '100%' }}
+              min={0}
+              formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+              placeholder="Enter project budget"
             />
           </Form.Item>
 
@@ -260,8 +283,8 @@ const ManageProjects = () => {
             name="competence_ids"
             label="Required Competences"
           >
-            <Select mode="multiple">
-              {competences.map(comp => (
+            <Select mode="multiple" placeholder="Select required competences">
+              {competences.map((comp) => (
                 <Option key={comp.id} value={comp.id.toString()}>
                   {comp.nom_competence}
                 </Option>
@@ -270,7 +293,7 @@ const ManageProjects = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" block>
               Add Project
             </Button>
           </Form.Item>

@@ -13,14 +13,78 @@ import {
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { styled } from '@mui/system';
+
+const AuthContainer = styled(Container)(({ theme }) => ({
+  minHeight: '100vh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'linear-gradient(135deg, #f0f9ff 0%, #e6f4ff 100%)',
+}));
+
+const FormContainer = styled(Box)(({ theme }) => ({
+  backgroundColor: 'white',
+  padding: theme.spacing(4),
+  borderRadius: '16px',
+  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+  border: '1px solid #e0e7ff',
+  width: '100%',
+  maxWidth: '440px',
+  transition: 'transform 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)'
+  }
+}));
+
+const Title = styled(Typography)(({ theme }) => ({
+  color: '#1e3a8a',
+  fontWeight: '700',
+  letterSpacing: '-0.5px',
+  marginBottom: theme.spacing(3),
+  textAlign: 'center'
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
+    '& fieldset': {
+      borderColor: '#bfdbfe',
+    },
+    '&:hover fieldset': {
+      borderColor: '#93c5fd',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#3b82f6',
+      borderWidth: '2px'
+    }
+  }
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  backgroundColor: '#1e3a8a',
+  color: 'white',
+  padding: theme.spacing(1.5),
+  borderRadius: '8px',
+  fontWeight: '600',
+  textTransform: 'none',
+  fontSize: '1rem',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    backgroundColor: '#1d4ed8',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(30, 58, 138, 0.25)'
+  }
+}));
 
 function Login() {
   const [cin, setCin] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('2'); // Default to membre
+  const [role, setRole] = useState('2');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+
 
   useEffect(() => {
     // Check if there's a stored token
@@ -135,74 +199,84 @@ function Login() {
     }
   };
 
+
   return (
-    <Container maxWidth="xs">
-      <Box 
-        sx={{ 
-          marginTop: 8, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center' 
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Sign in
-        </Typography>
-        <Box component="form" onSubmit={handleLogin} sx={{ mt: 1, width: '100%' }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="cin"
-            label="CIN"
-            name="cin"
-            autoComplete="cin"
-            autoFocus
-            value={cin}
-            onChange={(e) => setCin(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="role-select-label">Role</InputLabel>
+    <AuthContainer maxWidth={false}>
+      <FormContainer>
+        <Title variant="h4">
+          Connexion
+        </Title>
+
+        <Box component="form" onSubmit={handleLogin}>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <StyledTextField
+              fullWidth
+              label="CIN"
+              variant="outlined"
+              value={cin}
+              onChange={(e) => setCin(e.target.value)}
+              required
+            />
+          </FormControl>
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <StyledTextField
+              fullWidth
+              label="Mot de passe"
+              type="password"
+              variant="outlined"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </FormControl>
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel id="role-label" sx={{ color: '#1e3a8a' }}>Rôle</InputLabel>
             <Select
-              labelId="role-select-label"
-              id="role-select"
+              labelId="role-label"
               value={role}
-              label="Role"
+              label="Rôle"
               onChange={(e) => setRole(e.target.value)}
+              sx={{
+                borderRadius: '8px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#bfdbfe'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#93c5fd'
+                }
+              }}
             >
               <MenuItem value="0">Administrateur</MenuItem>
               <MenuItem value="1">Chef de Projet</MenuItem>
               <MenuItem value="2">Membre</MenuItem>
             </Select>
           </FormControl>
+
           {error && (
-            <Typography color="error" variant="body2">
+            <Typography 
+              color="error" 
+              sx={{ 
+                mb: 2,
+                textAlign: 'center',
+                fontWeight: '500'
+              }}
+            >
               {error}
             </Typography>
           )}
-          <Button
+
+          <StyledButton
             type="submit"
             fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            size="large"
           >
-            Sign In
-          </Button>
+            Se connecter
+          </StyledButton>
         </Box>
-      </Box>
-    </Container>
+      </FormContainer>
+    </AuthContainer>
   );
 }
 

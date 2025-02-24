@@ -330,6 +330,8 @@ exports.getProjectManagerProjects = async (req, res) => {
     if (connection) connection.release();
   }
 };
+const { sendProjectAssignmentEmail } = require('../utils/emailService');
+
 
 exports.assignProjectMember = async (req, res) => {
   const { memberId, projectId } = req.body;
@@ -359,26 +361,38 @@ exports.assignProjectMember = async (req, res) => {
     }
 
     // Check if member is already assigned to the project
-    // Check if member is already assigned to the project
-const [existingAssignment] = await connection.query(
-  'SELECT * FROM projet_users WHERE user_cin = ? AND projet_id = ?',
-  [memberId, projectId]
-);
+    const [existingAssignment] = await connection.query(
+      'SELECT * FROM projet_users WHERE user_cin = ? AND projet_id = ?',
+      [memberId, projectId]
+    );
 
-if (existingAssignment.length > 0) {
-  console.log('Member is already assigned:', existingAssignment);
-  return res.status(400).json({ message: 'Member is already assigned to this project' });
-}
+    if (existingAssignment.length > 0) {
+      return res.status(400).json({ message: 'Member is already assigned to this project' });
+    }
 
-// Proceed to assign member only if not already assigned
-await connection.query(
-  'INSERT INTO projet_users (projet_id, user_cin) VALUES (?, ?)',
-  [projectId, memberId]
-);
+    // Proceed to assign member
     await connection.query(
-      'update users set disponibilitee = 0 where cin = ?',
+      'INSERT INTO projet_users (projet_id, user_cin) VALUES (?, ?)',
+      [projectId, memberId]
+    );
+
+    // Update user availability
+    await connection.query(
+      'UPDATE users SET disponibilitee = 0 WHERE cin = ?',
       [memberId]
     );
+
+    // Send email notification
+    try {
+      await sendProjectAssignmentEmail({
+        to: memberCheck[0].email,
+        projectName: projectCheck[0].nom_projet,
+        memberName: memberCheck[0].nom
+      });
+    } catch (emailError) {
+      console.error('Email notification failed:', emailError);
+      // Non-critical error, so we'll still return success for project assignment
+    }
 
     res.status(200).json({ 
       message: 'Member assigned successfully',
@@ -440,6 +454,18 @@ exports.removeAssignedMember = async (req, res) => {
       });
     }
 
+    // Fetch project details
+    const [projectDetails] = await connection.query(
+      'SELECT nom_projet FROM projets WHERE id = ?',
+      [projectId]
+    );
+
+    // Fetch member details
+    const [memberDetails] = await connection.query(
+      'SELECT * FROM users WHERE cin = ?', 
+      [memberId]
+    );
+
     // Validate member exists (using cin instead of id)
     const [memberCheck] = await connection.query(
       'SELECT * FROM projet_users WHERE projet_id = ? AND user_cin = ?', 
@@ -471,6 +497,21 @@ exports.removeAssignedMember = async (req, res) => {
       'UPDATE users SET disponibilitee = 1 WHERE cin = ?',
       [memberId]
     );
+
+    // Send email notification about project removal
+    try {
+      if (memberDetails[0] && memberDetails[0].email && projectDetails[0]) {
+        await sendProjectAssignmentEmail({
+          to: memberDetails[0].email,
+          projectName: projectDetails[0].nom_projet,
+          memberName: memberDetails[0].nom,
+          emailType: 'removal'
+        });
+      }
+    } catch (emailError) {
+      console.error('Email notification for removal failed:', emailError);
+      // Non-critical error, so we'll still return success for member removal
+    }
 
     res.status(200).json({ 
       success: true,

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, 
-  Button, 
-  Modal, 
-  Form, 
-  Input, 
-  Typography, 
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Typography,
   message,
-  Popconfirm 
+  Popconfirm,
 } from 'antd';
-import { 
-  EditOutlined, 
+import {
+  EditOutlined,
   DeleteOutlined,
-  PlusOutlined 
+  PlusOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -35,18 +35,16 @@ const CompetencesPage = () => {
     try {
       setLoading(true);
       const token = Cookies.get('token');
-      
+
       if (!token) {
         message.error('No authentication token found. Please log in again.');
         return;
       }
 
       const response = await axios.get('http://localhost:5000/api/admin/competences', {
-        headers: { 
-          'Authorization': `Bearer ${token}` 
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (response.data) {
         setCompetences(response.data);
       } else {
@@ -54,6 +52,7 @@ const CompetencesPage = () => {
       }
     } catch (error) {
       console.error('Fetch competences error:', error);
+
       if (error.response?.status === 403) {
         message.error('You do not have permission to view competences');
       } else {
@@ -74,47 +73,33 @@ const CompetencesPage = () => {
   const handleEdit = (competence) => {
     setEditMode(true);
     setSelectedCompetence(competence);
-    form.setFieldsValue({
-      nom_competence: competence.nom_competence
-    });
+    form.setFieldsValue({ nom_competence: competence.nom_competence });
     setModalVisible(true);
   };
 
   const handleDelete = async (competence) => {
     try {
       const token = Cookies.get('token');
-      
+
       if (!token) {
         message.error('Authentication token not found. Please log in again.');
         return;
       }
 
-      console.log('Deleting competence with ID:', competence.id);
-      
-      const response = await axios.delete(`http://localhost:5000/api/admin/competences/${competence.id}`, {
-        headers: { 
-          'Authorization': `Bearer ${token}` 
-        }
+      await axios.delete(`http://localhost:5000/api/admin/competences/${competence.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Improved success handling
-      message.success(response.data.message || 'Competence deleted successfully');
+      message.success('Competence deleted successfully');
       fetchCompetences();
     } catch (error) {
       console.error('Delete competence error:', error);
-      
-      // More comprehensive error handling
+
       if (error.response) {
-        // Server responded with an error
-        console.error('Error response:', error.response.data);
         message.error(error.response.data.message || 'Failed to delete competence');
       } else if (error.request) {
-        // Request made but no response received
-        console.error('No response received:', error.request);
         message.error('No response from server. Please check your connection.');
       } else {
-        // Something happened in setting up the request
-        console.error('Error:', error.message);
         message.error('An unexpected error occurred while deleting competence');
       }
     }
@@ -123,7 +108,6 @@ const CompetencesPage = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      console.log('Values being submitted:', values);
       const token = Cookies.get('token');
 
       if (!token) {
@@ -131,44 +115,29 @@ const CompetencesPage = () => {
         return;
       }
 
-      const endpoint = editMode 
+      const endpoint = editMode
         ? `http://localhost:5000/api/admin/competences/${selectedCompetence.id}`
         : 'http://localhost:5000/api/admin/competences';
-
       const method = editMode ? 'put' : 'post';
 
-      const response = await axios[method](endpoint, 
-        {
-          nom_competence: values.nom_competence
-        }, 
-        {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+      await axios[method](
+        endpoint,
+        { nom_competence: values.nom_competence },
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
 
-      // Improved success handling
-      message.success(response.data.message || (editMode ? 'Competence updated successfully' : 'Competence added successfully'));
+      message.success(editMode ? 'Competence updated successfully' : 'Competence added successfully');
       setModalVisible(false);
       form.resetFields();
       fetchCompetences();
     } catch (error) {
       console.error('Save competence error:', error);
-      
-      // More comprehensive error handling
+
       if (error.response) {
-        // Server responded with an error
-        console.error('Error response:', error.response.data);
         message.error(error.response.data.message || 'Failed to save competence');
       } else if (error.request) {
-        // Request made but no response received
-        console.error('No response received:', error.request);
         message.error('No response from server. Please check your connection.');
       } else {
-        // Something happened in setting up the request
-        console.error('Error:', error.message);
         message.error('An unexpected error occurred');
       }
     }
@@ -189,14 +158,25 @@ const CompetencesPage = () => {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <>
-          <Button 
-            type="link" 
-            icon={<EditOutlined />} 
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {/* Edit Button */}
+          <Button
+            icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
+            style={{
+              background: '#1890ff',
+              borderColor: '#1890ff',
+              color: '#fff',
+              borderRadius: '4px',
+              transition: 'background 0.3s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#40a9ff')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#1890ff')}
           >
             Edit
           </Button>
+
+          {/* Delete Button */}
           <Popconfirm
             title="Delete Competence"
             description="Are you sure you want to delete this competence?"
@@ -204,47 +184,121 @@ const CompetencesPage = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button 
-              type="link" 
-              danger 
+            <Button
               icon={<DeleteOutlined />}
+              danger
+              style={{
+                background: '#ff4d4f',
+                borderColor: '#ff4d4f',
+                color: '#fff',
+                borderRadius: '4px',
+                transition: 'background 0.3s ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#ff7875')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#ff4d4f')}
             >
               Delete
             </Button>
           </Popconfirm>
-        </>
+        </div>
       ),
     },
   ];
 
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={2}>Manage Competences</Title>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
+      {/* Header Section */}
+      <div
+        style={{
+          marginBottom: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Title level={2} style={{ color: '#1890ff', fontWeight: 'bold' }}>
+          Manage Competences
+        </Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
           onClick={handleAdd}
+          style={{
+            background: '#1890ff',
+            borderColor: '#1890ff',
+            color: '#fff',
+            borderRadius: '4px',
+            transition: 'background 0.3s ease',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = '#40a9ff')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = '#1890ff')}
         >
           Add Competence
         </Button>
       </div>
 
-      <Table 
-        columns={columns} 
+      {/* Competences Table */}
+      <Table
+        columns={columns}
         dataSource={competences}
         rowKey="id"
         loading={loading}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+          position: ['bottomCenter'],
+        }}
+        bordered
+        style={{
+          borderRadius: '16px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden',
+        }}
       />
 
+      {/* Add/Edit Competence Modal */}
       <Modal
-        title={editMode ? "Edit Competence" : "Add New Competence"}
+        title={editMode ? 'Edit Competence' : 'Add New Competence'}
         open={modalVisible}
         onOk={handleModalOk}
         onCancel={() => {
           setModalVisible(false);
           form.resetFields();
         }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setModalVisible(false);
+              form.resetFields();
+            }}
+            style={{
+              background: '#ffffff',
+              borderColor: '#d9d9d9',
+              color: '#000000',
+              borderRadius: '4px',
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handleModalOk}
+            style={{
+              background: '#1890ff',
+              borderColor: '#1890ff',
+              color: '#fff',
+              borderRadius: '4px',
+              transition: 'background 0.3s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#40a9ff')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#1890ff')}
+          >
+            {editMode ? 'Update' : 'Add'} Competence
+          </Button>,
+        ]}
       >
         <Form
           form={form}
@@ -256,7 +310,14 @@ const CompetencesPage = () => {
             label="Competence Name"
             rules={[{ required: true, message: 'Please enter competence name' }]}
           >
-            <Input placeholder="Enter competence name" />
+            <Input
+              placeholder="Enter competence name"
+              style={{
+                borderRadius: '8px',
+                border: '1px solid #d9d9d9',
+                transition: 'border-color 0.3s ease',
+              }}
+            />
           </Form.Item>
         </Form>
       </Modal>
