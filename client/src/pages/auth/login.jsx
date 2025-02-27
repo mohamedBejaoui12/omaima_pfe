@@ -102,7 +102,7 @@ function Login() {
           navigate('/chef-de-projet', { state: { cin: parsedUser.cin }, replace: true });
           break;
         case '2':
-          navigate('/membre', { state: { cin: parsedUser.cin }, replace: true });
+          navigate('/member', { state: { cin: parsedUser.cin }, replace: true });
           break;
         default:
           navigate('/', { replace: true });
@@ -164,7 +164,7 @@ function Login() {
             });
             break;
           case '2':
-            navigate('/membre', { 
+            navigate('/member', { 
               state: { 
                 cin: response.data.user.cin, 
                 from,

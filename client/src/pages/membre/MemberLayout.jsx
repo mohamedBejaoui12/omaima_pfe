@@ -10,9 +10,8 @@ import {
   message,
 } from 'antd';
 import {
-  DashboardOutlined,
-  UserAddOutlined,
-  TeamOutlined,
+  UserOutlined,
+  ToolOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
 import Cookies from 'js-cookie';
@@ -20,27 +19,24 @@ import Cookies from 'js-cookie';
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
-const ChefDeProjetLayout = () => {
+const MemberLayout = () => {
   const navigate = useNavigate();
 
-  // Gestion de la déconnexion
+  // Handle logout functionality
   const handleLogout = () => {
     try {
       // Remove all authentication-related cookies
       Cookies.remove('token');
       Cookies.remove('user');
-
       // Clear any other potential cookies
       const allCookies = Cookies.get();
-      Object.keys(allCookies).forEach(cookieName => {
+      Object.keys(allCookies).forEach((cookieName) => {
         if (cookieName.includes('auth') || cookieName.includes('token')) {
           Cookies.remove(cookieName);
         }
       });
-
       // Show success message
       message.success('Logged out successfully');
-
       // Redirect to login page
       navigate('/login', { replace: true });
     } catch (error) {
@@ -49,26 +45,21 @@ const ChefDeProjetLayout = () => {
     }
   };
 
-  // Éléments du menu
+  // Sidebar menu items
   const menuItems = [
     {
-      key: 'dashboard',
-      icon: <DashboardOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/chef-de-projet">Tableau de bord</Link>,
+      key: 'profile',
+      icon: <UserOutlined style={{ fontSize: '20px' }} />,
+      label: <Link to="/member/profile">Update Profile</Link>,
     },
     {
-      key: 'suggest-members',
-      icon: <UserAddOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/chef-de-projet/suggest-members">Suggérer des membres</Link>,
-    },
-    {
-      key: 'members',
-      icon: <TeamOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/chef-de-projet/members">Membres de mon projet</Link>,
+      key: 'competencies',
+      icon: <ToolOutlined style={{ fontSize: '20px' }} />,
+      label: <Link to="/member/competencies">Manage Competencies</Link>,
     },
   ];
 
-  // Menu utilisateur
+  // User dropdown menu for logout
   const userMenu = (
     <Menu>
       <Menu.Item
@@ -82,7 +73,7 @@ const ChefDeProjetLayout = () => {
           transition: 'background 0.3s ease',
         }}
       >
-        Se déconnecter
+        Logout
       </Menu.Item>
     </Menu>
   );
@@ -95,7 +86,7 @@ const ChefDeProjetLayout = () => {
         background: '#f5f7fa',
       }}
     >
-      {/* Barre latérale */}
+      {/* Sidebar */}
       <Sider
         width={240}
         theme="dark"
@@ -122,13 +113,13 @@ const ChefDeProjetLayout = () => {
               letterSpacing: '1px',
             }}
           >
-            Tableau de bord Chef de Projet
+            Member Dashboard
           </Title>
         </div>
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['dashboard']}
+          defaultSelectedKeys={['profile']}
           items={menuItems}
           style={{
             background: '#1f1f1f',
@@ -145,9 +136,9 @@ const ChefDeProjetLayout = () => {
         />
       </Sider>
 
-      {/* Contenu principal */}
+      {/* Main Content */}
       <Layout>
-        {/* En-tête */}
+        {/* Header */}
         <Header
           style={{
             background: '#ffffff',
@@ -170,13 +161,13 @@ const ChefDeProjetLayout = () => {
               onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f0f0')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Avatar style={{ backgroundColor: '#1890ff' }}>C</Avatar>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>Chef</span>
+              <Avatar style={{ backgroundColor: '#1890ff' }}>M</Avatar>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>Member</span>
             </Space>
           </Dropdown>
         </Header>
 
-        {/* Contenu */}
+        {/* Content */}
         <Content
           style={{
             margin: '16px',
@@ -193,4 +184,4 @@ const ChefDeProjetLayout = () => {
   );
 };
 
-export default ChefDeProjetLayout;
+export default MemberLayout;

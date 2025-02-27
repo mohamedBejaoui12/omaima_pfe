@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Table, Button, Modal, Typography, message, Row, Col, Avatar, 
-  Descriptions, Tag, Tooltip, Space, Divider 
+import {
+  Table,
+  Button,
+  Modal,
+  Typography,
+  message,
+  Row,
+  Col,
+  Avatar,
+  Descriptions,
+  Tag,
+  Tooltip,
+  Space,
+  Divider,
 } from 'antd';
-import { 
-  EditOutlined, MailOutlined, PhoneOutlined 
+import {
+  EditOutlined,
+  MailOutlined,
+  PhoneOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -39,15 +52,15 @@ const AssignMembersPage = () => {
     try {
       const token = Cookies.get('token');
       if (!token) {
-        message.error('No authentication token found. Please log in again.');
+        message.error("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
         return;
       }
       const response = await axios.get('http://localhost:5000/api/project-manager/all-users', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
     } catch (error) {
-      message.error(error.response?.data?.message || 'Failed to fetch users');
+      message.error(error.response?.data?.message || "Échec du chargement des utilisateurs.");
     } finally {
       setLoading(false);
     }
@@ -57,13 +70,13 @@ const AssignMembersPage = () => {
     try {
       const token = Cookies.get('token');
       const response = await axios.get('http://localhost:5000/api/project-manager/projects', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data.length > 0) {
         setCurrentProject(response.data[0]);
       }
     } catch (error) {
-      message.error('Failed to fetch project details');
+      message.error("Échec du chargement des détails du projet.");
     }
   };
 
@@ -71,17 +84,21 @@ const AssignMembersPage = () => {
     if (!selectedUser || !currentProject) return;
     try {
       const token = Cookies.get('token');
-      await axios.post('http://localhost:5000/api/project-manager/assign-project-member', {
-        memberId: selectedUser.cin, 
-        projectId: currentProject.id,
-      }, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      message.success('Member assigned successfully!');
+      await axios.post(
+        'http://localhost:5000/api/project-manager/assign-project-member',
+        {
+          memberId: selectedUser.cin,
+          projectId: currentProject.id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("Membre assigné avec succès !");
       setAssignModalVisible(false);
       fetchUsers();
     } catch (error) {
-      message.error(error.response?.data?.message || 'Failed to assign member.');
+      message.error(error.response?.data?.message || "Échec de l'assignation du membre.");
     }
   };
 
@@ -92,82 +109,139 @@ const AssignMembersPage = () => {
 
   const columns = [
     { title: 'CIN', dataIndex: 'cin', key: 'cin' },
-    { title: 'Name', dataIndex: 'nom', key: 'nom' },
+    { title: 'Nom', dataIndex: 'nom', key: 'nom' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
-    { 
-      title: 'Role', 
-      dataIndex: 'role', 
+    {
+      title: 'Rôle',
+      dataIndex: 'role',
       key: 'role',
-      render: (role) => ({ '0': 'Admin', '1': 'Manager', '2': 'Employee' }[role] || 'Unknown')
+      render: (role) =>
+        ({ '0': 'Administrateur', '1': 'Chef de projet', '2': 'Employé' }[role] || 'Inconnu'),
     },
-    { title: 'Position', dataIndex: 'poste', key: 'poste', render: (poste) => poste || 'Not specified' },
-    { 
-      title: 'Phone', 
-      dataIndex: 'num_tele', 
-      key: 'num_tele', 
-      render: (num_tele) => <span style={{ whiteSpace: 'nowrap' }}>{num_tele || 'Not provided'}</span>
+    {
+      title: 'Poste',
+      dataIndex: 'poste',
+      key: 'poste',
+      render: (poste) => poste || 'Non spécifié',
+    },
+    {
+      title: 'Téléphone',
+      dataIndex: 'num_tele',
+      key: 'num_tele',
+      render: (num_tele) => (
+        <span style={{ whiteSpace: 'nowrap' }}>{num_tele || 'Non fourni'}</span>
+      ),
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
         <Space>
-          <Button icon={<EditOutlined />} onClick={() => { setVisible(true); setSelectedUser(record); }}>View</Button>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => {
+              setVisible(true);
+              setSelectedUser(record);
+            }}
+          >
+            Voir
+          </Button>
           {record.role !== '0' && (
-            <Button icon={<EditOutlined />} type='primary' onClick={() => handleAssignClick(record)}>Assign</Button>
+            <Button
+              icon={<EditOutlined />}
+              type="primary"
+              onClick={() => handleAssignClick(record)}
+            >
+              Assigner
+            </Button>
           )}
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div>
-      <Title level={2}>All Members</Title>
-      <Table columns={columns} dataSource={users} rowKey="cin" loading={loading} />
+      {/* Titre principal */}
+      <Title level={2}>Tous les membres</Title>
 
-      {/* Assign Member Modal */}
+      {/* Tableau des utilisateurs */}
+      <Table
+        columns={columns}
+        dataSource={users}
+        rowKey="cin"
+        loading={loading}
+        pagination={{ pageSize: 10 }}
+      />
+
+      {/* Modal pour assigner un membre */}
       <Modal
-        title="Assign Member"
+        title="Assigner un membre"
         open={assignModalVisible}
         onOk={handleAssignMember}
         onCancel={() => setAssignModalVisible(false)}
-        okText="Assign"
-        cancelText="Cancel"
+        okText="Assigner"
+        cancelText="Annuler"
       >
-        <p>Are you sure you want to assign {selectedUser?.nom} to the project?</p>
+        <p>
+          Êtes-vous sûr de vouloir assigner {selectedUser?.nom} au projet ?
+        </p>
       </Modal>
 
-      {/* User Profile Modal */}
+      {/* Modal pour afficher le profil de l'utilisateur */}
       <Modal
-        title={`${selectedUser?.nom} - Profile`}
+        title={`${selectedUser?.nom} - Profil`}
         open={visible}
         onCancel={() => setVisible(false)}
-        footer={[<Button key="close" onClick={() => setVisible(false)}>Close</Button>]}
+        footer={[
+          <Button key="close" onClick={() => setVisible(false)}>
+            Fermer
+          </Button>,
+        ]}
       >
         <Row gutter={[16, 16]}>
           <Col span={8} style={{ textAlign: 'center' }}>
-            <Avatar size={120} src={`http://localhost:5000${selectedUser?.imageUrl}` || 'https://th.bing.com/th/id/OIP.6Ckm4MGXRjZgWQyRkjDDPgHaEK?rs=1&pid=ImgDetMain'} />
+            <Avatar
+              size={120}
+              src={`http://localhost:5000${selectedUser?.imageUrl}` || 'https://th.bing.com/th/id/OIP.6Ckm4MGXRjZgWQyRkjDDPgHaEK?rs=1&pid=ImgDetMain'}
+            />
           </Col>
           <Col span={16}>
             <Descriptions bordered column={1}>
-              <Descriptions.Item label="Name">{selectedUser?.nom}</Descriptions.Item>
-              <Descriptions.Item label="Position">
-                <Tag color="processing">{selectedUser?.poste || 'Not specified'}</Tag>
+              <Descriptions.Item label="Nom">
+                {selectedUser?.nom}
               </Descriptions.Item>
-              <Descriptions.Item label="Role">
-                <Tag color={selectedUser?.role === '1' ? 'blue' : selectedUser?.role === '2' ? 'green' : 'red'}>
-                  {selectedUser?.role === '0' ? 'Admin' : selectedUser?.role === '1' ? 'Manager' : 'Employee'}
+              <Descriptions.Item label="Poste">
+                <Tag color="processing">{selectedUser?.poste || 'Non spécifié'}</Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Rôle">
+                <Tag
+                  color={
+                    selectedUser?.role === '1'
+                      ? 'blue'
+                      : selectedUser?.role === '2'
+                      ? 'green'
+                      : 'red'
+                  }
+                >
+                  {selectedUser?.role === '0'
+                    ? 'Administrateur'
+                    : selectedUser?.role === '1'
+                    ? 'Chef de projet'
+                    : 'Employé'}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Department">{selectedUser?.department || 'Not provided'}</Descriptions.Item>
-              <Descriptions.Item label="Contact">
+              <Descriptions.Item label="Département">
+                {selectedUser?.department || 'Non fourni'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Coordonnées">
                 <Space direction="vertical">
                   <Tooltip title="Email">
                     <MailOutlined /> {selectedUser?.email}
                   </Tooltip>
-                  <Tooltip title="Phone">
-                    <PhoneOutlined /> {selectedUser?.num_tele || 'Not provided'}
+                  <Tooltip title="Téléphone">
+                    <PhoneOutlined />{' '}
+                    {selectedUser?.num_tele || 'Non fourni'}
                   </Tooltip>
                 </Space>
               </Descriptions.Item>
