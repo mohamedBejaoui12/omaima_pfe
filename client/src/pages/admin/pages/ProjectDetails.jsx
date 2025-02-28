@@ -158,13 +158,9 @@ const ProjectDetails = () => {
 
       if (error.response && error.response.status === 400) {
         const errorMessage = error.response.data.message || 'Cannot assign project manager';
-        const existingProjectId = error.response.data.existingProjectId;
-
-        if (existingProjectId) {
-          message.error(`This manager is already assigned to another project (Project ID: ${existingProjectId})`);
-        } else {
-          message.error(errorMessage);
-        }
+        
+        message.success(errorMessage);
+        fetchProjectManager();
       } else {
         handleApiError(error);
       }

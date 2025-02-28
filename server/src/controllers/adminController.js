@@ -367,20 +367,12 @@ exports.deleteProject = async (req, res) => {
 
 // Project Manager Management Functions
 exports.assignProjectManager = async (req, res) => {
-  const connection = await pool.getConnection();
   try {
-    await connection.beginTransaction();
-
     const { projet_id, manager_cin } = req.body;
 
-    // Validate input
-    if (!projet_id || !manager_cin) {
-      return res.status(400).json({ message: 'Project ID and Manager CIN are required' });
-    }
-
     // Check if project exists
-    const [projectExists] = await connection.query(
-      'SELECT id FROM Projets WHERE id = ?',
+    const [projectExists] = await pool.execute(
+      'SELECT * FROM Projets WHERE id = ?', 
       [projet_id]
     );
 
@@ -388,63 +380,42 @@ exports.assignProjectManager = async (req, res) => {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Check if user exists and is a valid manager
-    const [userExists] = await connection.query(
-      'SELECT cin, role FROM users WHERE cin = ?',
-      [manager_cin]
+    // Check if manager exists and is a project manager
+    const [managerExists] = await pool.execute(
+      'SELECT * FROM users WHERE cin = ? AND role = ?', 
+      [manager_cin, '1']
     );
 
-    if (userExists.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
+    if (managerExists.length === 0) {
+      return res.status(404).json({ message: 'Project manager not found' });
     }
 
-    // Validate that the user is a manager (role = "1")
-    if (userExists[0].role !== "1") {
-      return res.status(400).json({ 
-        message: 'Only users with manager role can be assigned as project managers' 
-      });
-    }
-
-    // Check if the manager is already assigned to another project
-    const [existingProjectAssignment] = await connection.query(
-      'SELECT projet_id FROM ProjetManagers WHERE manager_cin = ?',
-      [manager_cin]
-    );
-
-    if (existingProjectAssignment.length > 0) {
-      return res.status(400).json({ 
-        message: 'This manager is already assigned to another project',
-        existingProjectId: existingProjectAssignment[0].projet_id
-      });
-    }
-
-    // Remove any existing project manager for this project
-    await connection.query(
-      'DELETE FROM ProjetManagers WHERE projet_id = ?',
+    // Check if the project already has a manager (optional, depending on business logic)
+    const [existingManager] = await pool.execute(
+      'SELECT * FROM ProjetManagers WHERE projet_id = ?', 
       [projet_id]
     );
 
-    // Assign new project manager
-    const [result] = await connection.query(
-      'INSERT INTO ProjetManagers (projet_id, manager_cin) VALUES (?, ?)',
+    if (existingManager.length > 0) {
+      // Instead of blocking, we'll update the existing manager
+      await pool.execute(
+        'UPDATE ProjetManagers SET manager_cin = ? WHERE projet_id = ?', 
+        [manager_cin, projet_id]
+      );
+      
+      return res.json({ message: 'Project manager updated successfully' });
+    }
+
+    // Assign project manager
+    await pool.execute(
+      'INSERT INTO ProjetManagers (projet_id, manager_cin) VALUES (?, ?)', 
       [projet_id, manager_cin]
     );
 
-    await connection.commit();
-
-    res.status(201).json({ 
-      message: 'Project manager assigned successfully',
-      assignmentId: result.insertId 
-    });
+    res.json({ message: 'Project manager assigned successfully' });
   } catch (error) {
-    await connection.rollback();
-    console.error('Error assigning project manager:', error);
-    res.status(500).json({ 
-      message: 'Error assigning project manager',
-      error: error.message 
-    });
-  } finally {
-    connection.release();
+    console.error('Assign project manager error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -453,23 +424,20 @@ exports.getProjectManager = async (req, res) => {
     const { projet_id } = req.params;
 
     const [projectManager] = await pool.execute(`
-      SELECT u.*, pm.date_assignation
-      FROM ProjetManagers pm
-      JOIN users u ON pm.manager_cin = u.cin
+      SELECT u.* 
+      FROM users u
+      JOIN ProjetManagers pm ON u.cin = pm.manager_cin
       WHERE pm.projet_id = ?
     `, [projet_id]);
 
     if (projectManager.length === 0) {
-      return res.status(404).json({ message: 'No project manager assigned' });
+      return res.status(404).json({ message: 'No project manager found for this project' });
     }
 
     res.json(projectManager[0]);
   } catch (error) {
-    console.error('Error fetching project manager:', error);
-    res.status(500).json({ 
-      message: 'Error fetching project manager',
-      error: error.message 
-    });
+    console.error('Get project manager error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -477,22 +445,15 @@ exports.removeProjectManager = async (req, res) => {
   try {
     const { projet_id } = req.params;
 
-    const [result] = await pool.execute(
-      'DELETE FROM ProjetManagers WHERE projet_id = ?',
+    await pool.execute(
+      'DELETE FROM ProjetManagers WHERE projet_id = ?', 
       [projet_id]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'No project manager found to remove' });
-    }
-
     res.json({ message: 'Project manager removed successfully' });
   } catch (error) {
-    console.error('Error removing project manager:', error);
-    res.status(500).json({ 
-      message: 'Error removing project manager',
-      error: error.message 
-    });
+    console.error('Remove project manager error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
