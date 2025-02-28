@@ -329,8 +329,7 @@ exports.getProjectManagerProjects = async (req, res) => {
   } finally {
     if (connection) connection.release();
   }
-};
-const { sendProjectAssignmentEmail } = require('../utils/emailService');
+};const { sendProjectAssignmentEmail } = require('../utils/emailService');
 
 
 exports.assignProjectMember = async (req, res) => {
@@ -410,18 +409,21 @@ exports.assignProjectMember = async (req, res) => {
   }
 };
 exports.getProjectMembers = async (req, res) => {
-  const {projectId } = req.body;
-
+  const {memberId} = req.body;
   let connection;
   try {
     connection = await db.getConnection();
     
-    // Get all users except admins (role = "2" for employees)
+    // Modified query to include project ID
     const [users] = await connection.query(
-      'SELECT cin, nom, email, role, poste, num_tele,imageUrl FROM users,projet_users WHERE users.cin = projet_users.user_cin and projet_users.projet_id = ?',
-      [projectId]
+      `SELECT u.*, p.nom_projet AS project_name, p.id AS projet_id
+       FROM users u
+       JOIN projet_users pu ON u.cin = pu.user_cin
+       JOIN projets p ON pu.projet_id = p.id
+       JOIN projetmanagers pm ON p.id = pm.projet_id
+       WHERE pm.manager_cin = ?`,
+      [memberId]
     );
-
     res.status(200).json(users);
   } catch (error) {
     console.error('Get Users Error:', error);
@@ -435,13 +437,13 @@ exports.getProjectMembers = async (req, res) => {
 };
 exports.removeAssignedMember = async (req, res) => {
   const { memberId, projectId } = req.body;
-  const userCin = req.user.cin; // Get the authenticated user's CIN
+  const userCin = req.user.cin; // Get the authenticated user's CIN from the token
   let connection;
 
   try {
     connection = await db.getConnection();
 
-    // First verify if the authenticated user is the project manager using the projetmanagers table
+    // First verify if the authenticated user is the project manager
     const [projectManager] = await connection.query(
       'SELECT * FROM projetmanagers WHERE projet_id = ? AND manager_cin = ?',
       [projectId, userCin]
