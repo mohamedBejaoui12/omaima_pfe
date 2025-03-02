@@ -12,6 +12,7 @@ import {
   Tag,
   Tooltip,
   Space,
+  Select,
   Divider,
 } from 'antd';
 import {
@@ -25,6 +26,8 @@ import Cookies from 'js-cookie';
 const { Title } = Typography;
 
 const AssignMembersPage = () => {
+  // Add new state for projects
+  const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
@@ -43,7 +46,7 @@ const AssignMembersPage = () => {
 
   useEffect(() => {
     if (currentUser) {
-      fetchCurrentProject();
+      fetchProjects();
     }
   }, [currentUser]);
 
@@ -66,22 +69,32 @@ const AssignMembersPage = () => {
     }
   };
 
-  const fetchCurrentProject = async () => {
+  // Modify fetchCurrentProject to fetch all projects
+  const fetchProjects = async () => {
     try {
       const token = Cookies.get('token');
       const response = await axios.get('http://localhost:5000/api/project-manager/projects', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (response.data.length > 0) {
-        setCurrentProject(response.data[0]);
-      }
+      setProjects(response.data);
     } catch (error) {
-      message.error("Échec du chargement des détails du projet.");
+      message.error("Échec du chargement des projets.");
     }
   };
 
+  // Update useEffect to fetch projects
+  useEffect(() => {
+    if (currentUser) {
+      fetchProjects(); // Changed from fetchCurrentProject to fetchProjects
+    }
+  }, [currentUser]);
+
+  // Update handleAssignMember to use selected project
   const handleAssignMember = async () => {
-    if (!selectedUser || !currentProject) return;
+    if (!selectedUser || !currentProject) {
+      message.error("Veuillez sélectionner un projet et un membre");
+      return;
+    }
     try {
       const token = Cookies.get('token');
       await axios.post(
@@ -160,6 +173,7 @@ const AssignMembersPage = () => {
     },
   ];
 
+  // Update the assign modal content
   return (
     <div>
       {/* Titre principal */}
@@ -174,7 +188,7 @@ const AssignMembersPage = () => {
         pagination={{ pageSize: 10 }}
       />
 
-      {/* Modal pour assigner un membre */}
+      {/* Modified Modal for assigning a member */}
       <Modal
         title="Assigner un membre"
         open={assignModalVisible}
@@ -183,9 +197,27 @@ const AssignMembersPage = () => {
         okText="Assigner"
         cancelText="Annuler"
       >
-        <p>
-          Êtes-vous sûr de vouloir assigner {selectedUser?.nom} au projet ?
-        </p>
+        <div style={{ marginBottom: 16 }}>
+          <Typography.Text strong>Sélectionner un projet:</Typography.Text>
+          <Select
+            style={{ width: '100%', marginTop: 8 }}
+            placeholder="Choisir un projet"
+            value={currentProject?.id}
+            onChange={(value) => {
+              const project = projects.find(p => p.id === value);
+              setCurrentProject(project);
+            }}
+          >
+            {projects.map(project => (
+              <Select.Option key={project.id} value={project.id}>
+                {project.nom_projet}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+        <Typography.Text>
+          Êtes-vous sûr de vouloir assigner <strong>{selectedUser?.nom}</strong> au projet <strong>{currentProject?.nom_projet}</strong> ?
+        </Typography.Text>
       </Modal>
 
       {/* Modal pour afficher le profil de l'utilisateur */}

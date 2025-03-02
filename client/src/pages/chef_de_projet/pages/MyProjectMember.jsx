@@ -23,32 +23,19 @@ const ProjectMembers = () => {
   const [memberToRemove, setMemberToRemove] = useState(null);
   const navigate = useNavigate();
 
+  // Get the current user's CIN from the cookie
+  const userCookie = Cookies.get('user');
+  const currentUserCin = userCookie ? JSON.parse(userCookie).cin : null;
+
   useEffect(() => {
-    fetchCurrentProject();
-  }, []);
-
-  const fetchCurrentProject = async () => {
-    try {
-      const token = Cookies.get('token');
-      const response = await axios.get('http://localhost:5000/api/project-manager/projects', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.data.length > 0) {
-        const projectId = response.data[0].id;
-        setCurrentProject(projectId);
-
-        // Fetch users after setting the current project
-        setTimeout(() => {
-          fetchUsers(projectId);
-        }, 100);
-      }
-    } catch (error) {
-      message.error("Échec du chargement des détails du projet.");
+    if (currentUserCin) {
+      fetchUsers(currentUserCin);
     }
-  };
+  }, [currentUserCin]);
 
-  const fetchUsers = async (projectId) => {
+  // Remove fetchCurrentProject function as it's no longer needed
+
+  const fetchUsers = async (memberId) => {
     setLoading(true);
     try {
       const token = Cookies.get('token');
@@ -59,7 +46,7 @@ const ProjectMembers = () => {
 
       const response = await axios.post(
         'http://localhost:5000/api/project-manager/members',
-        { projectId },
+        { memberId }, // Send the manager's CIN
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUsers(response.data);
@@ -70,6 +57,13 @@ const ProjectMembers = () => {
     }
   };
 
+  // Add showRemoveModal function that was missing
+  const showRemoveModal = (memberId) => {
+    setMemberToRemove(memberId);
+    setRemoveModalVisible(true);
+  };
+  
+  // Update handleRemoveMember to include the correct project ID
   const handleRemoveMember = async () => {
     try {
       const token = Cookies.get('token');
@@ -77,36 +71,47 @@ const ProjectMembers = () => {
         message.error("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
         return;
       }
-
-      if (!currentProject) {
-        message.error("Aucun projet sélectionné.");
+  
+      // Get project ID from the user record
+      const userToRemove = users.find(user => user.cin === memberToRemove);
+      if (!userToRemove) {
+        message.error("Membre non trouvé.");
         return;
       }
-
+  
+      // Log the user data to check the correct field name
+      console.log('User to remove:', userToRemove);
+  
       await axios.post(
         'http://localhost:5000/api/project-manager/remove-project-member',
-        { projectId: currentProject, memberId: memberToRemove },
+        {
+          projectId: userToRemove.projet_id, // Changed to match the database field
+          memberId: userToRemove.cin,
+          managerCin: currentUserCin
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       message.success("Membre supprimé avec succès !");
       setRemoveModalVisible(false);
-      fetchUsers(currentProject); // Refresh the user list
+      fetchUsers(currentUserCin);
     } catch (error) {
       console.error("Erreur lors de la suppression du membre :", error);
       message.error(error.response?.data?.message || "Échec de la suppression du membre.");
     }
   };
 
-  const showRemoveModal = (memberId) => {
-    setMemberToRemove(memberId);
-    setRemoveModalVisible(true);
-  };
-
+  // Update the columns array to use project_name instead of nom_projet
   const columns = [
     { title: 'CIN', dataIndex: 'cin', key: 'cin' },
     { title: 'Nom', dataIndex: 'nom', key: 'nom' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
+    {
+      title: 'Projet',
+      dataIndex: 'project_name', // Updated to match the backend response
+      key: 'project_name',
+      render: (project_name) => project_name || 'Non assigné'
+    },
     {
       title: 'Rôle',
       dataIndex: 'role',

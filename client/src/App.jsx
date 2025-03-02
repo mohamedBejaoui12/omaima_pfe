@@ -19,6 +19,7 @@ import ManageCompetencies from "./pages/membre/ManageCompetencies";
 import AsignMembersPage from "./pages/chef_de_projet/pages/AssignMembersPage";
 import MyProjectMember from "./pages/chef_de_projet/pages/MyProjectMember";
 import MemberLayout from "./pages/membre/MemberLayout";
+import ManageCV from "./pages/membre/ManageCV"; // Add this import
 
 // Role constants for clarity
 const ROLES = {
@@ -95,6 +96,7 @@ function App() {
   <Route index element={<Navigate to="profile" replace />} />
   <Route path="profile" element={<UpdateProfile />} />
   <Route path="competencies" element={<ManageCompetencies />} />
+  <Route path="cv" element={<ManageCV />} /> {/* Add this route */}
 </Route>
       </Routes>
     </Router>
