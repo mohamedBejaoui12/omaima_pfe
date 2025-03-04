@@ -66,6 +66,11 @@ const ChefDeProjetLayout = () => {
       icon: <TeamOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/chef-de-projet/members">Membres de mon projet</Link>,
     },
+    {
+      key: 'projets',
+      icon: <TeamOutlined style={{ fontSize: '20px' }} />,
+      label: <Link to="/chef-de-projet/projets">Mon Projets</Link>,
+    },
   ];
 
   // Menu utilisateur

@@ -13,6 +13,7 @@ import {
   UserOutlined,
   ToolOutlined,
   LogoutOutlined,
+  FileOutlined, // Add this import
 } from '@ant-design/icons';
 import Cookies from 'js-cookie';
 
@@ -57,6 +58,12 @@ const MemberLayout = () => {
       icon: <ToolOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/member/competencies">Manage Competencies</Link>,
     },
+    {
+      key: 'cv',
+      icon: <FileOutlined style={{ fontSize: '20px' }} />,
+      label: <Link to="/member/cv">Manage CV</Link>,
+    },
+    // Removed duplicate CV entry
   ];
 
   // User dropdown menu for logout

@@ -19,7 +19,15 @@ import ManageCompetencies from "./pages/membre/ManageCompetencies";
 import AsignMembersPage from "./pages/chef_de_projet/pages/AssignMembersPage";
 import MyProjectMember from "./pages/chef_de_projet/pages/MyProjectMember";
 import MemberLayout from "./pages/membre/MemberLayout";
+import ManageCV from "./pages/membre/ManageCV"; // Add this import
+import Pv_Projects from "./pages/chef_de_projet/pages/Pv_Projects";
+// Add this import at the top
+import ProjectPVs from "./pages/chef_de_projet/pages/ProjectPVs";
 
+// Find the chef-de-projet route section and add this new route
+<Route path="/chef-de-projet" element={<ChefDeProjetLayout />}>
+  <Route path="project-pvs/:projectId" element={<ProjectPVs />} />
+</Route>
 // Role constants for clarity
 const ROLES = {
   ADMIN: '0',
@@ -82,7 +90,8 @@ function App() {
   <Route path="suggest-members" element={<MemberSuggestionModal />} />
   <Route path="all-users" element={<AsignMembersPage />} />
   <Route path="members" element={<MyProjectMember />} />
-  {/* You can add more nested routes here */}
+  <Route path="projets" element={<Pv_Projects />} />
+  <Route path="project-pvs/:projectId" element={<ProjectPVs />} />
 </Route>
 <Route 
   path="/member" 
@@ -95,6 +104,7 @@ function App() {
   <Route index element={<Navigate to="profile" replace />} />
   <Route path="profile" element={<UpdateProfile />} />
   <Route path="competencies" element={<ManageCompetencies />} />
+  <Route path="cv" element={<ManageCV />} /> {/* Add this route */}
 </Route>
       </Routes>
     </Router>
