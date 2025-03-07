@@ -2,7 +2,16 @@ import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Chip // Replace Tag with Chip from MUI
 } from '@mui/material';
+// Remove Space import as it's not needed
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +20,7 @@ import MemberLayout from './MemberLayout';
 function MembreDashboard() {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,19 +55,34 @@ function MembreDashboard() {
           navigate('/login');
         }
       } catch (error) {
-        console.error(
-          'Erreur lors du chargement des informations utilisateur:',
-          error.response?.data || error
-        );
+        console.error('Erreur lors du chargement des informations utilisateur:', error);
         if (error.response?.status === 401 || error.response?.status === 403) {
           navigate('/login');
         }
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchUserInfo();
+    const fetchMemberProjects = async () => {
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.get('http://localhost:5000/user/my-projects', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setProjects(response.data);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
+    };
+
+    const loadData = async () => {
+      await fetchUserInfo();
+      await fetchMemberProjects();
+      setLoading(false);
+    };
+
+    loadData();
   }, [navigate]);
 
   if (loading) {
@@ -77,17 +102,48 @@ function MembreDashboard() {
   }
 
   return (
-    <MemberLayout userInfo={userInfo}>
-      {/* Contenu principal */}
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Bienvenue, {userInfo.nom}!
-        </Typography>
-        <Typography variant="body1">
-          Voici votre tableau de bord. Vous pouvez gérer vos compétences et consulter vos informations personnelles.
-        </Typography>
-      </Container>
-    </MemberLayout>
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+        Mes Projets
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nom du projet</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Statut</TableCell>
+              <TableCell>Date</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {projects.map((project) => (
+              <TableRow key={project.id}>
+                <TableCell>{project.nom_projet}</TableCell>
+                <TableCell>{project.description || 'Aucune description'}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={project.statut}
+                    color={
+                      project.statut === 'en cours'
+                        ? 'primary'
+                        : project.statut === 'terminé'
+                        ? 'success'
+                        : 'error'
+                    }
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell>
+                  {project.delai ? new Date(project.delai).toLocaleDateString() : 'Non défini'}
+                </TableCell>
+
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 }
 

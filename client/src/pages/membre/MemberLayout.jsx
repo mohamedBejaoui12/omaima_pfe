@@ -14,13 +14,14 @@ import {
   ToolOutlined,
   LogoutOutlined,
   FileOutlined, // Add this import
+  ProjectOutlined, // Add this for projects icon
 } from '@ant-design/icons';
 import Cookies from 'js-cookie';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
-const MemberLayout = () => {
+const MemberLayout = ({ userInfo }) => {  // Add userInfo prop
   const navigate = useNavigate();
 
   // Handle logout functionality
@@ -45,13 +46,17 @@ const MemberLayout = () => {
       message.error('Failed to log out');
     }
   };
-
-  // Sidebar menu items
+  // Updated menuItems
   const menuItems = [
     {
       key: 'profile',
       icon: <UserOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/member/profile">Update Profile</Link>,
+    },
+    {
+      key: 'projects',
+      icon: <ProjectOutlined style={{ fontSize: '20px' }} />,
+      label: <Link to="/member/projects">Mes Projets</Link>,
     },
     {
       key: 'competencies',
@@ -63,9 +68,7 @@ const MemberLayout = () => {
       icon: <FileOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/member/cv">Manage CV</Link>,
     },
-    // Removed duplicate CV entry
   ];
-
   // User dropdown menu for logout
   const userMenu = (
     <Menu>
@@ -84,15 +87,8 @@ const MemberLayout = () => {
       </Menu.Item>
     </Menu>
   );
-
   return (
-    <Layout
-      style={{
-        minHeight: '100vh',
-        fontFamily: 'Inter, sans-serif',
-        background: '#f5f7fa',
-      }}
-    >
+    <Layout style={{ minHeight: '100vh', fontFamily: 'Inter, sans-serif', background: '#f5f7fa' }}>
       {/* Sidebar */}
       <Sider
         width={240}
@@ -142,7 +138,6 @@ const MemberLayout = () => {
           }}
         />
       </Sider>
-
       {/* Main Content */}
       <Layout>
         {/* Header */}
@@ -168,12 +163,15 @@ const MemberLayout = () => {
               onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f0f0')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Avatar style={{ backgroundColor: '#1890ff' }}>M</Avatar>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>Member</span>
+              <Avatar style={{ backgroundColor: '#1890ff' }}>
+                {userInfo?.nom ? userInfo.nom[0].toUpperCase() : 'M'}
+              </Avatar>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                {userInfo?.nom || 'Member'}
+              </span>
             </Space>
           </Dropdown>
         </Header>
-
         {/* Content */}
         <Content
           style={{

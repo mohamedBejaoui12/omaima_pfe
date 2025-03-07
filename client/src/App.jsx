@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Login from "./pages/auth/login";
 import AdminLayout from "./pages/admin/components/AdminLayout";
 import AdminDashboard from "./pages/admin/pages/adminDashboard";
@@ -97,19 +97,22 @@ function App() {
   path="/member" 
   element={
     <ProtectedRoute allowedRoles={[ROLES.MEMBRE]}>
-      <MemberLayout />
+      <Outlet /> {/* Remove MemberLayout here */}
     </ProtectedRoute>
   }
 >
-  <Route index element={<Navigate to="profile" replace />} />
-  <Route path="profile" element={<UpdateProfile />} />
-  <Route path="competencies" element={<ManageCompetencies />} />
-  <Route path="cv" element={<ManageCV />} /> {/* Add this route */}
+  <Route element={<MemberLayout />}> {/* Add MemberLayout here to wrap all child routes */}
+    <Route index element={<Navigate to="projects" replace />} /> {/* Change default route to projects */}
+    <Route path="profile" element={<UpdateProfile />} />
+    <Route path="competencies" element={<ManageCompetencies />} />
+    <Route path="cv" element={<ManageCV />} />
+    <Route path="projects" element={<MembreDashboard />} />
+  </Route>
 </Route>
       </Routes>
     </Router>
     </>
-  );
+  ) ;
 }
 
 export default App;
