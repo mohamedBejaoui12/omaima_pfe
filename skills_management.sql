@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 21, 2025 at 11:37 AM
+-- Generation Time: Mar 12, 2025 at 02:36 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.1.25
 
@@ -47,6 +47,30 @@ INSERT INTO `competences` (`id`, `nom_competence`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `project_pv`
+--
+
+CREATE TABLE `project_pv` (
+  `id` int(11) NOT NULL,
+  `projet_id` int(11) NOT NULL,
+  `file_name` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `upload_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `project_pv`
+--
+
+INSERT INTO `project_pv` (`id`, `projet_id`, `file_name`, `file_path`, `upload_date`, `description`) VALUES
+(1, 1, 'DSI-Guide PFE.pdf', 'uploads\\pv\\pv-1741013147705.pdf', '2025-03-03 14:45:47', 'PV pour Site E-commerce'),
+(2, 1, 'DSI-Guide PFE (1).docx', 'uploads\\pv\\pv-1741013569937.docx', '2025-03-03 14:52:49', 'PV pour Site E-commerce'),
+(3, 1, 'Gestion des stages.pdf', 'uploads\\pv\\pv-1741625922750.pdf', '2025-03-10 16:58:42', 'PV pour Site E-commerce');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `projetmanagers`
 --
 
@@ -62,7 +86,9 @@ CREATE TABLE `projetmanagers` (
 --
 
 INSERT INTO `projetmanagers` (`id`, `projet_id`, `manager_cin`, `date_assignation`) VALUES
-(3, 1, 5, '2025-02-16 17:06:40');
+(3, 1, 5, '2025-02-16 17:06:40'),
+(4, 6, 5, '2025-02-28 14:33:32'),
+(5, 8, 5, '2025-03-10 16:55:07');
 
 -- --------------------------------------------------------
 
@@ -86,7 +112,7 @@ CREATE TABLE `projets` (
 INSERT INTO `projets` (`id`, `nom_projet`, `description`, `delai`, `budget`, `statut`) VALUES
 (1, 'Site E-commerce', 'Développement d\'un site de vente en ligne.', '2025-03-01', 5000.00, 'en cours'),
 (2, 'Planification Stratégique 1', 'We need a web application for project management with React frontend, Node.js backend, \nand MySQL database. The project requires strong skills in:\n- React.js\n- Node.js\n- RESTful API design\n- Database optimization\n- Agile methodologies', '2025-06-15', 7000.00, 'en cours'),
-(6, 'ahmed bejaoui', 'ahmed project', '2025-02-22', 222.00, 'en cours'),
+(6, 'ahmed bejaoui', 'ahmed project', '2025-02-22', 222.00, 'terminé'),
 (8, 'test test', 'this is just a test', '2025-02-28', 99999999.99, 'en cours');
 
 -- --------------------------------------------------------
@@ -132,7 +158,10 @@ CREATE TABLE `projet_users` (
 
 INSERT INTO `projet_users` (`projet_id`, `user_cin`) VALUES
 (1, 1),
-(1, 321654987);
+(1, 4),
+(6, 2),
+(6, 3),
+(8, 321654987);
 
 -- --------------------------------------------------------
 
@@ -159,9 +188,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`cin`, `poste`, `experience`, `disponibilitee`, `email`, `password`, `num_tele`, `role`, `nom`, `imageUrl`) VALUES
 (1, 'web developer', NULL, 0, 'test1@gmail.com', '$2a$10$sLQvNahC/oMxH23xIqMb9OsQZlY/8pWw0AvUuqreLYT3LA36iQdFa', NULL, '2', 'test 1', NULL),
-(2, 'web developer', NULL, 1, 'test2@gmail.com', '$2a$10$NdcQPLX1EdxUsyW2tMbDLO9.luw9zCA2zyISVI2vvp2za4iDZCtjy', NULL, '2', 'test2', NULL),
-(3, 'web developer', NULL, 1, 'test3@gmail.com', '$2a$10$HG3oxkhLrNdNKLI8oqwCq.LtGC9ereRsxpx9dgBx5eng.kHx/T41q', NULL, '2', 'test3', NULL),
-(4, 'web developer', NULL, 1, 'test4@gmail.com', '$2a$10$v8aYImBBIrlCmU3USP/w7OqTJIgvSZApypRIszVNPUBCj8aa4AdOi', NULL, '2', 'test4', NULL),
+(2, 'web developer', NULL, 0, 'test2@gmail.com', '$2a$10$NdcQPLX1EdxUsyW2tMbDLO9.luw9zCA2zyISVI2vvp2za4iDZCtjy', NULL, '2', 'test2', '/uploads/profiles/profile-2-1740486635463-788805822.jpg'),
+(3, 'web developer', NULL, 0, 'test3@gmail.com', '$2a$10$HG3oxkhLrNdNKLI8oqwCq.LtGC9ereRsxpx9dgBx5eng.kHx/T41q', NULL, '2', 'test3', NULL),
+(4, 'web developer', NULL, 0, 'test4@gmail.com', '$2a$10$v8aYImBBIrlCmU3USP/w7OqTJIgvSZApypRIszVNPUBCj8aa4AdOi', NULL, '2', 'test4', NULL),
 (5, 'manager', NULL, 1, 'Manager@gmail.com', '$2a$10$iRlJA3HDmsq3YD/53o6you3rhNmI0L5ObkLxVQVfBaG9fD.AcS84K', NULL, '1', 'Manager', NULL),
 (14521465, 'web developer', NULL, 1, 'hama@gmail.com', '$2a$10$NokOVik8RRwReHbyNI/AseolzyNmUe75s38Wzrbslt.3RqrmZAKDG', NULL, '0', 'hama hama', ''),
 (321654987, 'web developer', NULL, 0, 'bejaouiam25@gmail.com', '$2a$10$Ix974ZQl.Xv3iqLPwbW1IubTvgP7kiL.qli61uU24.E/lavKhNxai', '90640476', '2', 'ahmed bejaoui', '/uploads/profiles/profile-321654987-1739896811620-336386205.png');
@@ -230,6 +259,13 @@ ALTER TABLE `competences`
   ADD UNIQUE KEY `nom_competence` (`nom_competence`);
 
 --
+-- Indexes for table `project_pv`
+--
+ALTER TABLE `project_pv`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `projet_id` (`projet_id`);
+
+--
 -- Indexes for table `projetmanagers`
 --
 ALTER TABLE `projetmanagers`
@@ -282,10 +318,16 @@ ALTER TABLE `competences`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
+-- AUTO_INCREMENT for table `project_pv`
+--
+ALTER TABLE `project_pv`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `projetmanagers`
 --
 ALTER TABLE `projetmanagers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `projets`
@@ -296,6 +338,12 @@ ALTER TABLE `projets`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `project_pv`
+--
+ALTER TABLE `project_pv`
+  ADD CONSTRAINT `project_pv_ibfk_1` FOREIGN KEY (`projet_id`) REFERENCES `projets` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `projetmanagers`

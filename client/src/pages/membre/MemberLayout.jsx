@@ -63,11 +63,11 @@ const MemberLayout = ({ userInfo }) => {  // Add userInfo prop
       icon: <ToolOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/member/competencies">Manage Competencies</Link>,
     },
-    {
-      key: 'cv',
-      icon: <FileOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/member/cv">Manage CV</Link>,
-    },
+    // {
+    //   key: 'cv',
+    //   icon: <FileOutlined style={{ fontSize: '20px' }} />,
+    //   label: <Link to="/member/cv">Manage CV</Link>,
+    // },
   ];
   // User dropdown menu for logout
   const userMenu = (

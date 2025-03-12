@@ -56,11 +56,11 @@ const ChefDeProjetLayout = () => {
       icon: <DashboardOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/chef-de-projet">Tableau de bord</Link>,
     },
-    {
-      key: 'suggest-members',
-      icon: <UserAddOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/chef-de-projet/suggest-members">Suggérer des membres</Link>,
-    },
+    // {
+    //   key: 'suggest-members',
+    //   icon: <UserAddOutlined style={{ fontSize: '20px' }} />,
+    //   label: <Link to="/chef-de-projet/suggest-members">Suggérer des membres</Link>,
+    // },
     {
       key: 'members',
       icon: <TeamOutlined style={{ fontSize: '20px' }} />,
