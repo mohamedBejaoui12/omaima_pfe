@@ -13,7 +13,9 @@ const adminRoutes = require('./src/routes/adminRoutes');
 const profileRoutes = require('./src/routes/profileRoutes');
 const competenceRoutes = require('./src/routes/competenceRoutes');
 const projectManagerRoutes = require('./src/routes/projectManagerRoutes');
-const cvRoutes = require('./src/routes/cvRoutes'); // Add this line
+const cvRoutes = require('./src/routes/cvRoutes');
+const pvRoutes = require('./src/routes/pvRoutes');
+const ticketRoutes = require('./src/routes/ticketRoutes'); // Add this line
 
 // Create uploads directory if it doesn't exist
 const fs = require('fs');
@@ -26,6 +28,12 @@ if (!fs.existsSync(uploadDir)) {
 const cvUploadDir = path.join(__dirname, 'uploads/cvs');
 if (!fs.existsSync(cvUploadDir)) {
   fs.mkdirSync(cvUploadDir, { recursive: true });
+}
+
+// Create PV uploads directory
+const pvUploadDir = path.join(__dirname, 'uploads/pv');
+if (!fs.existsSync(pvUploadDir)) {
+  fs.mkdirSync(pvUploadDir, { recursive: true });
 }
 
 // Simplified CORS configuration
@@ -60,7 +68,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/admin', competenceRoutes);
 app.use('/profile', profileRoutes);
 app.use('/api/project-manager', projectManagerRoutes);
-app.use('/cv', cvRoutes); // Add this line
+app.use('/cv', cvRoutes); 
+app.use('/api/pv', pvRoutes);
+app.use('/tickets', ticketRoutes); // Add this line
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);

@@ -4,6 +4,9 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Add this for debugging
+console.log("Gemini API Key length:", process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.length : 0);
+
 // Advanced project member suggestion with intelligent AI matching
 exports.suggestProjectMembers = async (req, res) => {
   const { projectDescription } = req.body;
@@ -200,39 +203,48 @@ exports.suggestProjectMembers = async (req, res) => {
     });
 
     // AI-Enhanced Member Ranking
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const aiPrompt = `
-      Advanced Project Team Member Recommendation System
-
-      Project Context: ${projectDescription}
-
-      Ranking Criteria:
-      1. Direct skill alignment
-      2. Proficiency depth
-      3. Project experience relevance
-      4. Learning potential
-      5. Team compatibility
-
-      Candidate Profiles:
-      ${formattedMembers.map(member => `
-        Profile:
-        - Name: ${member.name}
-        - Position: ${member.contact.position}
-        - Skills: ${member.competencies.map(c => 
-          `${c.name} (${c.level})`).join(', ')}
-        - Previous Projects: ${member.previousProjects.join(', ') || 'None'}
-        - Project Experience: ${member.projectCount}
-        - Expertise Score: ${member.expertiseScore}
-      `).join('\n\n')}
-
-      Provide a ranked recommendation with match percentage and key insights.
-      Format: Rank | Name | Match % | Key Skills | Recommendation Notes
-    `;
+    // Update to use gemini-2.0-flash model
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     try {
+      const generateAIPrompt = (projectDesc, members) => {
+        return `
+          Advanced Project Team Member Recommendation System
+      
+          Project Context: ${projectDesc}
+      
+          Ranking Criteria:
+          1. Direct skill alignment
+          2. Proficiency depth
+          3. Project experience relevance
+          4. Learning potential
+          5. Team compatibility
+      
+          Candidate Profiles:
+          ${members.map(member => `
+            Profile:
+            - Name: ${member.name}
+            - Position: ${member.contact.position}
+            - Skills: ${member.competencies.map(c => 
+              `${c.name} (${c.level})`).join(', ')}
+            - Previous Projects: ${member.previousProjects.join(', ') || 'None'}
+            - Project Experience: ${member.projectCount}
+            - Match Score: ${member.matchScore}
+          `).join('\n\n')}
+      
+          Provide a ranked recommendation with match percentage and key insights.
+          Format: Rank | Name | Match % | Key Skills | Recommendation Notes
+        `;
+      };
+    
+      const aiPrompt = generateAIPrompt(projectDescription, formattedMembers);
+      
+      // Log the prompt for debugging
+      console.log('AI Prompt Length:', aiPrompt.length);
+      
       const result = await model.generateContent(aiPrompt);
       const aiRecommendation = result.response.text();
-
+    
       const rankedMembers = aiRecommendation
         .split('\n')
         .filter(line => line.includes('|'))
@@ -244,7 +256,7 @@ exports.suggestProjectMembers = async (req, res) => {
           const member = formattedMembers.find(m => 
             m.name.toLowerCase().includes(name.toLowerCase())
           );
-
+    
           return member ? {
             ...member,
             rank: parseInt(rank) || 0,
@@ -256,29 +268,34 @@ exports.suggestProjectMembers = async (req, res) => {
         .filter(Boolean)
         .sort((a, b) => b.matchScore - a.matchScore)
         .slice(0, 3);  // Top 3 recommendations
-
+    
       res.status(200).json({
         members: rankedMembers,
         aiInsights: aiRecommendation
       });
+    
+      } catch (aiError) {
+        console.error('AI Recommendation Generation Error:', aiError);
+        // Add more detailed error logging
+        console.error('Error details:', JSON.stringify(aiError, null, 2));
+        
+        // Return a more graceful error response
+        return res.status(500).json({
+          message: 'AI recommendation generation failed',
+          error: aiError.message,
+          suggestion: 'Please try again with a different project description'
+        });
+      }
 
-    } catch (aiError) {
-      console.error('AI Recommendation Generation Error:', aiError);
+    } catch (error) {
+      console.error('Member Suggestion Error:', error);
       res.status(500).json({
-        message: 'AI recommendation generation failed',
-        error: aiError.message
+        message: 'Failed to suggest project members',
+        error: error.message
       });
+    } finally {
+      if (connection) connection.release();
     }
-
-  } catch (error) {
-    console.error('Member Suggestion Error:', error);
-    res.status(500).json({
-      message: 'Failed to suggest project members',
-      error: error.message
-    });
-  } finally {
-    if (connection) connection.release();
-  }
 };
 
 exports.getAllUsers = async (req, res) => {

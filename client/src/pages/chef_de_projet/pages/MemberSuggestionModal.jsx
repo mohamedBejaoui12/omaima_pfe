@@ -171,10 +171,12 @@ const MemberSuggestionModal = ({
 
   const fetchSuggestedMembers = async () => {
     if (!projectDescription) return;
-
+  
     setLoading(true);
     try {
       const token = Cookies.get('token');
+      console.log("Making API request with project description length:", projectDescription.length);
+      
       const response = await axios.post(
         '/api/project-manager/suggest-members', 
         { projectDescription },
@@ -185,12 +187,21 @@ const MemberSuggestionModal = ({
           }
         }
       );
-
+  
+      console.log("API response:", response.data);
       setMembers(response.data.members || []);
-      message.success(`Found ${response.data.members.length} potential members`);
+      message.success(`Found ${response.data.members?.length || 0} potential members`);
     } catch (error) {
       console.error('Member suggestion error:', error);
-      message.error(error.response?.data?.message || 'Failed to fetch members');
+      // More detailed error handling
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        message.error(`Server error: ${error.response.data?.message || 'Unknown server error'}`);
+      } else if (error.request) {
+        message.error('No response received from server. Check your network connection.');
+      } else {
+        message.error(`Error: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }

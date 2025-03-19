@@ -15,6 +15,7 @@ import {
   UsergroupAddOutlined,
   ProjectOutlined,
   LogoutOutlined,
+  QuestionCircleOutlined, // Add this import for the support tickets icon
 } from '@ant-design/icons';
 import Cookies from 'js-cookie';
 
@@ -74,6 +75,11 @@ const AdminLayout = () => {
       key: 'manage-competences',
       icon: <ProjectOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/admin/manage-competences">Manage Competences</Link>,
+    },
+    {
+      key: 'support-tickets',
+      icon: <QuestionCircleOutlined style={{ fontSize: '20px' }} />,
+      label: <Link to="/admin/support-tickets">Support Tickets</Link>,
     },
   ];
 

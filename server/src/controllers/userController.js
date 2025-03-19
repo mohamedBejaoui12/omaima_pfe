@@ -18,4 +18,33 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-module.exports = { getUserInfo };
+const getMemberProjects = async (req, res) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    
+    const memberCIN = req.user.cin;
+    
+    const [projects] = await connection.query(`
+      SELECT DISTINCT p.* 
+      FROM projets p 
+      INNER JOIN projet_users pu ON p.id = pu.projet_id 
+      WHERE pu.user_cin = ?
+    `, [memberCIN]);
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error('Get Projects Error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch projects',
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal Server Error'
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+module.exports = { 
+  getUserInfo,
+  getMemberProjects
+};

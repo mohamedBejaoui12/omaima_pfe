@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Login from "./pages/auth/login";
 import AdminLayout from "./pages/admin/components/AdminLayout";
 import AdminDashboard from "./pages/admin/pages/adminDashboard";
@@ -20,6 +20,14 @@ import AsignMembersPage from "./pages/chef_de_projet/pages/AssignMembersPage";
 import MyProjectMember from "./pages/chef_de_projet/pages/MyProjectMember";
 import MemberLayout from "./pages/membre/MemberLayout";
 import ManageCV from "./pages/membre/ManageCV"; // Add this import
+import Pv_Projects from "./pages/chef_de_projet/pages/Pv_Projects";
+// Add this import at the top
+import ProjectPVs from "./pages/chef_de_projet/pages/ProjectPVs";
+import TicketListPage from "./pages/membre/TicketListPage";
+import CreateTicketPage from "./pages/membre/CreateTicketPage";
+import TicketDetailsPage from "./pages/membre/TicketDetailsPage";
+import AdminTicketsPage from "./pages/admin/pages/AdminTicketsPage";
+import AdminTicketDetailsPage from "./pages/admin/pages/AdminTicketDetailsPage";
 
 // Role constants for clarity
 const ROLES = {
@@ -50,56 +58,66 @@ function App() {
           },
         }}
       />
-    <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="add-member" element={<AddMemberPage />} />
-          <Route path="manage-users" element={<ManageUsersPage />} />
-          <Route path="manage-projects" element={<ManageProjects />} />
-          <Route path="manage-competences" element={<CompetencesPage />} />
-          <Route path="projects/:id" element={<ProjectDetails />} />
-        </Route>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="add-member" element={<AddMemberPage />} />
+            <Route path="manage-users" element={<ManageUsersPage />} />
+            <Route path="manage-projects" element={<ManageProjects />} />
+            <Route path="manage-competences" element={<CompetencesPage />} />
+            <Route path="projects/:id" element={<ProjectDetails />} />
+            <Route path="support-tickets" element={<AdminTicketsPage />} />
+            <Route path="support-tickets/:ticketId" element={<AdminTicketDetailsPage />} />
+          </Route>
 
-        <Route 
-  path="/chef-de-projet" 
-  element={
-    <ProtectedRoute allowedRoles={[ROLES.CHEF_DE_PROJET]}>
-      <ChefDeProjetLayout />
-    </ProtectedRoute>
-  }
->
-  <Route index element={<ChefDashboard />} />
-  <Route path="suggest-members" element={<MemberSuggestionModal />} />
-  <Route path="all-users" element={<AsignMembersPage />} />
-  <Route path="members" element={<MyProjectMember />} />
-  {/* You can add more nested routes here */}
-</Route>
-<Route 
-  path="/member" 
-  element={
-    <ProtectedRoute allowedRoles={[ROLES.MEMBRE]}>
-      <MemberLayout />
-    </ProtectedRoute>
-  }
->
-  <Route index element={<Navigate to="profile" replace />} />
-  <Route path="profile" element={<UpdateProfile />} />
-  <Route path="competencies" element={<ManageCompetencies />} />
-  <Route path="cv" element={<ManageCV />} /> {/* Add this route */}
-</Route>
-      </Routes>
-    </Router>
+          <Route 
+            path="/chef-de-projet" 
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.CHEF_DE_PROJET]}>
+                <ChefDeProjetLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<ChefDashboard />} />
+            <Route path="suggest-members" element={<MemberSuggestionModal />} />
+            <Route path="all-users" element={<AsignMembersPage />} />
+            <Route path="members" element={<MyProjectMember />} />
+            <Route path="projets" element={<Pv_Projects />} />
+            <Route path="project-pvs/:projectId" element={<ProjectPVs />} />
+          </Route>
+          
+          <Route 
+            path="/member" 
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.MEMBRE]}>
+                <Outlet />
+              </ProtectedRoute>
+            }
+          >
+            <Route element={<MemberLayout />}>
+              <Route index element={<Navigate to="projects" replace />} />
+              <Route path="profile" element={<UpdateProfile />} />
+              <Route path="competencies" element={<ManageCompetencies />} />
+              <Route path="cv" element={<ManageCV />} />
+              <Route path="projects" element={<MembreDashboard />} />
+              <Route path="support-tickets" element={<TicketListPage />} />
+              <Route path="support-tickets/new" element={<CreateTicketPage />} />
+              <Route path="support-tickets/:ticketId" element={<TicketDetailsPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </Router>
     </>
   );
 }
