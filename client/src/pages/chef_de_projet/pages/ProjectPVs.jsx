@@ -54,22 +54,44 @@ function ProjectPVs() {
     }
   };
 
+  const handleDownloadPV = async (pvId, fileName) => {
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.get(`http://localhost:5000/api/pv/download/${pvId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob',
+      });
+
+      // Create a blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName || 'pv-document.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      message.error("Échec du téléchargement du PV");
+    }
+  };
+
   const columns = [
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      render: (text) => text || 'Aucune description',
+    },
     {
       title: 'Nom du fichier',
       dataIndex: 'file_name',
       key: 'file_name',
     },
     {
-      title: 'Date d\'upload',
-      dataIndex: 'upload_date',
-      key: 'upload_date',
-      render: (date) => new Date(date).toLocaleString('fr-FR'),
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      title: 'Date de création',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date) => new Date(date).toLocaleString('fr-FR')
     },
     {
       title: 'Actions',
@@ -78,7 +100,7 @@ function ProjectPVs() {
         <Button
           type="primary"
           icon={<DownloadOutlined />}
-          onClick={() => window.open(`http://localhost:5000/${record.file_path}`, '_blank')}
+          onClick={() => handleDownloadPV(record.id, record.file_name)}
         >
           Télécharger
         </Button>
@@ -88,35 +110,47 @@ function ProjectPVs() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Space>
-          <Button 
-            icon={<ArrowLeftOutlined />} 
-            onClick={() => navigate('/chef-de-projet/projets')}
-          >
-            Retour
-          </Button>
-          <Title level={2} style={{ margin: 0 }}>PVs du Projet</Title>
-        </Space>
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={() => navigate('/chef-de-projet/projets')}
+        style={{ marginBottom: '16px' }}
+      >
+        Retour aux projets
+      </Button>
 
-        {project && (
-          <Card>
-            <Descriptions title="Détails du projet" bordered>
-              <Descriptions.Item label="Nom du projet">{project.nom_projet}</Descriptions.Item>
-              <Descriptions.Item label="Description">{project.description}</Descriptions.Item>
-              <Descriptions.Item label="Statut">{project.statut}</Descriptions.Item>
-            </Descriptions>
-          </Card>
-        )}
+      {project && (
+        <Card style={{ marginBottom: '24px' }}>
+          <Descriptions title="Détails du Projet" bordered>
+            <Descriptions.Item label="Nom du projet" span={3}>
+              {project.nom_projet}
+            </Descriptions.Item>
+            <Descriptions.Item label="Description" span={3}>
+              {project.description || 'Aucune description'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Statut">
+              {project.statut === 'en cours' ? 'En cours' : 
+               project.statut === 'terminé' ? 'Terminé' : 
+               project.statut === 'annulé' ? 'Annulé' : 'Inconnu'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Date de début">
+              {project.date_debut ? new Date(project.date_debut).toLocaleDateString('fr-FR') : 'Non définie'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Date de fin">
+              {project.date_fin ? new Date(project.date_fin).toLocaleDateString('fr-FR') : 'Non définie'}
+            </Descriptions.Item>
+          </Descriptions>
+        </Card>
+      )}
 
-        <Table
-          columns={columns}
-          dataSource={pvList}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-        />
-      </Space>
+      <Title level={3}>Procès-Verbaux (PVs)</Title>
+      <Table
+        columns={columns}
+        dataSource={pvList}
+        rowKey="id"
+        loading={loading}
+        pagination={{ pageSize: 10 }}
+        locale={{ emptyText: 'Aucun PV trouvé pour ce projet' }}
+      />
     </div>
   );
 }

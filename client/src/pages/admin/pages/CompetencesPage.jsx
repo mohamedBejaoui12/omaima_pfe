@@ -54,7 +54,10 @@ const CompetencesPage = () => {
       console.error('Fetch competences error:', error);
 
       if (error.response?.status === 403) {
-        message.error('You do not have permission to view competences');
+        // Update message texts
+        message.error('Aucun jeton d\'authentification trouvé. Veuillez vous reconnecter.');
+        message.error('Vous n\'avez pas la permission de voir les compétences');
+        message.error('Échec de la récupération des compétences');
       } else {
         message.error(error.response?.data?.message || 'Failed to fetch competences');
       }
@@ -143,186 +146,104 @@ const CompetencesPage = () => {
     }
   };
 
-  const columns = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-    },
-    {
-      title: 'Competence Name',
-      dataIndex: 'nom_competence',
-      key: 'nom_competence',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {/* Edit Button */}
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            style={{
-              background: '#1890ff',
-              borderColor: '#1890ff',
-              color: '#fff',
-              borderRadius: '4px',
-              transition: 'background 0.3s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#40a9ff')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#1890ff')}
-          >
-            Edit
-          </Button>
-
-          {/* Delete Button */}
-          <Popconfirm
-            title="Delete Competence"
-            description="Are you sure you want to delete this competence?"
-            onConfirm={() => handleDelete(record)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              icon={<DeleteOutlined />}
-              danger
-              style={{
-                background: '#ff4d4f',
-                borderColor: '#ff4d4f',
-                color: '#fff',
-                borderRadius: '4px',
-                transition: 'background 0.3s ease',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#ff7875')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = '#ff4d4f')}
-            >
-              Delete
-            </Button>
-          </Popconfirm>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <div style={{ padding: '24px' }}>
-      {/* Header Section */}
-      <div
-        style={{
-          marginBottom: '24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Title level={2} style={{ color: '#1890ff', fontWeight: 'bold' }}>
-          Manage Competences
-        </Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <Title level={2}>Gérer les Compétences</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={handleAdd}
-          style={{
-            background: '#1890ff',
-            borderColor: '#1890ff',
-            color: '#fff',
-            borderRadius: '4px',
-            transition: 'background 0.3s ease',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = '#40a9ff')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = '#1890ff')}
+          style={{ borderRadius: '8px' }}
         >
-          Add Competence
+          Ajouter une Compétence
         </Button>
       </div>
 
-      {/* Competences Table */}
       <Table
-        columns={columns}
-        dataSource={competences}
-        rowKey="id"
+        columns={[
+          {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+          },
+          {
+            title: 'Nom de la Compétence',
+            dataIndex: 'nom_competence',
+            key: 'nom_competence',
+          },
+          {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+              <span>
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={() => handleEdit(record)}
+                  style={{ marginRight: '8px' }}
+                >
+                  Modifier
+                </Button>
+                <Popconfirm
+                  title="Êtes-vous sûr de vouloir supprimer cette compétence?"
+                  onConfirm={() => handleDelete(record)}
+                  okText="Oui"
+                  cancelText="Non"
+                >
+                  <Button type="primary" danger icon={<DeleteOutlined />}>
+                    Supprimer
+                  </Button>
+                </Popconfirm>
+              </span>
+            ),
+          },
+        ]}
+        dataSource={competences.map(comp => ({ ...comp, key: comp.id }))}
         loading={loading}
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
-          position: ['bottomCenter'],
-        }}
-        bordered
-        style={{
-          borderRadius: '16px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          overflow: 'hidden',
-        }}
+        pagination={{ pageSize: 10 }}
+        rowKey="id"
       />
 
-      {/* Add/Edit Competence Modal */}
       <Modal
-        title={editMode ? 'Edit Competence' : 'Add New Competence'}
-        open={modalVisible}
-        onOk={handleModalOk}
-        onCancel={() => {
-          setModalVisible(false);
-          form.resetFields();
-        }}
+        title={editMode ? "Modifier la Compétence" : "Ajouter une Nouvelle Compétence"}
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
         footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setModalVisible(false);
-              form.resetFields();
-            }}
-            style={{
-              background: '#ffffff',
-              borderColor: '#d9d9d9',
-              color: '#000000',
-              borderRadius: '4px',
-            }}
-          >
-            Cancel
+          <Button key="cancel" onClick={() => setModalVisible(false)}>
+            Annuler
           </Button>,
           <Button
             key="submit"
             type="primary"
-            onClick={handleModalOk}
-            style={{
-              background: '#1890ff',
-              borderColor: '#1890ff',
-              color: '#fff',
-              borderRadius: '4px',
-              transition: 'background 0.3s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#40a9ff')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#1890ff')}
+            onClick={() => form.submit()}
+            loading={loading}
           >
-            {editMode ? 'Update' : 'Add'} Competence
+            {editMode ? "Mettre à jour" : "Ajouter"}
           </Button>,
         ]}
       >
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ nom_competence: '' }}
+          onFinish={editMode ? handleUpdate : handleCreate}
         >
           <Form.Item
             name="nom_competence"
-            label="Competence Name"
-            rules={[{ required: true, message: 'Please enter competence name' }]}
+            label="Nom de la Compétence"
+            rules={[
+              {
+                required: true,
+                message: 'Veuillez entrer le nom de la compétence',
+              },
+            ]}
           >
-            <Input
-              placeholder="Enter competence name"
-              style={{
-                borderRadius: '8px',
-                border: '1px solid #d9d9d9',
-                transition: 'border-color 0.3s ease',
-              }}
-            />
+            <Input placeholder="Entrez le nom de la compétence" />
           </Form.Item>
         </Form>
       </Modal>
     </div>
-  );
+);
 };
 
 export default CompetencesPage;

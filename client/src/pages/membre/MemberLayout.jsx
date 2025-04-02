@@ -13,8 +13,8 @@ import {
   UserOutlined,
   ToolOutlined,
   LogoutOutlined,
-  FileOutlined, // Add this import
-  ProjectOutlined, // Add this for projects icon
+  FileOutlined,
+  ProjectOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
 import Cookies from 'js-cookie';
@@ -22,7 +22,7 @@ import Cookies from 'js-cookie';
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
-const MemberLayout = ({ userInfo }) => {  // Add userInfo prop
+const MemberLayout = ({ userInfo }) => {
   const navigate = useNavigate();
 
   // Handle logout functionality
@@ -39,20 +39,21 @@ const MemberLayout = ({ userInfo }) => {  // Add userInfo prop
         }
       });
       // Show success message
-      message.success('Logged out successfully');
+      message.success('Déconnecté avec succès');
       // Redirect to login page
       navigate('/login', { replace: true });
     } catch (error) {
-      console.error('Logout error:', error);
-      message.error('Failed to log out');
+      console.error('Erreur de déconnexion:', error);
+      message.error('Échec de la déconnexion');
     }
   };
+  
   // Updated menuItems
   const menuItems = [
     {
       key: 'profile',
       icon: <UserOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/member/profile">Update Profile</Link>,
+      label: <Link to="/member/profile">Mettre à jour le profil</Link>,
     },
     {
       key: 'projects',
@@ -62,17 +63,17 @@ const MemberLayout = ({ userInfo }) => {  // Add userInfo prop
     {
       key: 'competencies',
       icon: <ToolOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/member/competencies">Manage Competencies</Link>,
+      label: <Link to="/member/competencies">Gérer les compétences</Link>,
     },
     {
       key: 'cv',
       icon: <FileOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/member/cv">Manage CV</Link>,
+      label: <Link to="/member/cv">Gérer le CV</Link>,
     },
     {
       key: 'support-tickets',
       icon: <QuestionCircleOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/member/support-tickets">Support Tickets</Link>,
+      label: <Link to="/member/support-tickets">Tickets de support</Link>,
     },
   ];
 
@@ -90,10 +91,11 @@ const MemberLayout = ({ userInfo }) => {  // Add userInfo prop
           transition: 'background 0.3s ease',
         }}
       >
-        Logout
+        Déconnexion
       </Menu.Item>
     </Menu>
   );
+  
   return (
     <Layout style={{ minHeight: '100vh', fontFamily: 'Inter, sans-serif', background: '#f5f7fa' }}>
       {/* Sidebar */}
@@ -111,82 +113,73 @@ const MemberLayout = ({ userInfo }) => {  // Add userInfo prop
             alignItems: 'center',
             justifyContent: 'center',
             padding: '24px',
-            background: '#1f1f1f',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           }}
         >
           <Title
-            level={3}
+            level={4}
             style={{
-              color: '#ffffff',
+              color: '#fff',
               margin: 0,
-              fontWeight: 'bold',
-              letterSpacing: '1px',
+              textAlign: 'center',
             }}
           >
-            Member Dashboard
+            Espace Membre
           </Title>
         </div>
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['profile']}
+          defaultSelectedKeys={['dashboard']}
           items={menuItems}
           style={{
             background: '#1f1f1f',
-            borderRight: 'none',
-          }}
-          itemStyle={{
-            borderRadius: '8px',
-            margin: '4px 16px',
-            transition: 'background 0.3s ease',
-          }}
-          activeKeyStyle={{
-            background: '#333333',
+            marginTop: '16px',
           }}
         />
       </Sider>
+      
       {/* Main Content */}
       <Layout>
-        {/* Header */}
         <Header
           style={{
-            background: '#ffffff',
+            padding: '0 24px',
+            background: '#fff',
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.08)',
             display: 'flex',
-            justifyContent: 'flex-end',
             alignItems: 'center',
-            padding: '0 16px',
-            borderBottom: '1px solid #e8e8e8',
-            height: '56px',
+            justifyContent: 'flex-end',
           }}
         >
-          <Dropdown overlay={userMenu} placement="bottomRight">
+          <Dropdown overlay={userMenu} trigger={['click']}>
             <Space
               style={{
                 cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: '8px',
-                transition: 'background 0.3s ease',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                transition: 'all 0.3s',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f0f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Avatar style={{ backgroundColor: '#1890ff' }}>
-                {userInfo?.nom ? userInfo.nom[0].toUpperCase() : 'M'}
-              </Avatar>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                {userInfo?.nom || 'Member'}
-              </span>
+              <Avatar
+                style={{
+                  backgroundColor: '#1890ff',
+                  cursor: 'pointer',
+                }}
+                src={userInfo?.imageUrl ? `http://localhost:5000${userInfo.imageUrl}` : null}
+                icon={!userInfo?.imageUrl && <UserOutlined />}
+              />
+              <span>{userInfo?.nom || 'Membre'}</span>
             </Space>
           </Dropdown>
         </Header>
-        {/* Content */}
+        
         <Content
           style={{
-            margin: '16px',
-            padding: '16px',
-            background: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            margin: '24px 16px',
+            padding: 24,
+            background: '#fff',
+            borderRadius: '4px',
+            minHeight: 280,
           }}
         >
           <Outlet />

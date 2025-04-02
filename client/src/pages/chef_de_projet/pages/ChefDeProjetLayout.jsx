@@ -39,13 +39,13 @@ const ChefDeProjetLayout = () => {
       });
 
       // Show success message
-      message.success('Logged out successfully');
+      message.success('Déconnecté avec succès');
 
       // Redirect to login page
       navigate('/login', { replace: true });
     } catch (error) {
-      console.error('Logout error:', error);
-      message.error('Failed to log out');
+      console.error('Erreur de déconnexion:', error);
+      message.error('Échec de la déconnexion');
     }
   };
 
@@ -69,7 +69,7 @@ const ChefDeProjetLayout = () => {
     {
       key: 'projets',
       icon: <TeamOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/chef-de-projet/projets">Mon Projets</Link>,
+      label: <Link to="/chef-de-projet/projets">Mes Projets</Link>,
     },
   ];
 
@@ -144,51 +144,51 @@ const ChefDeProjetLayout = () => {
             margin: '4px 16px',
             transition: 'background 0.3s ease',
           }}
-          activeKeyStyle={{
-            background: '#333333',
-          }}
         />
       </Sider>
 
       {/* Contenu principal */}
       <Layout>
-        {/* En-tête */}
         <Header
           style={{
+            padding: '0 24px',
             background: '#ffffff',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
             display: 'flex',
-            justifyContent: 'flex-end',
             alignItems: 'center',
-            padding: '0 16px',
-            borderBottom: '1px solid #e8e8e8',
-            height: '56px',
+            justifyContent: 'flex-end',
           }}
         >
-          <Dropdown overlay={userMenu} placement="bottomRight">
+          <Dropdown overlay={userMenu} trigger={['click']}>
             <Space
               style={{
                 cursor: 'pointer',
-                padding: '4px 8px',
+                padding: '8px 12px',
                 borderRadius: '8px',
                 transition: 'background 0.3s ease',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f0f0')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Avatar style={{ backgroundColor: '#1890ff' }}>C</Avatar>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>Chef</span>
+              <Avatar
+                style={{
+                  backgroundColor: '#1890ff',
+                  cursor: 'pointer',
+                }}
+                icon={<UserAddOutlined />}
+              />
+              <span style={{ marginLeft: '8px', fontWeight: '500' }}>
+                Mon Profil
+              </span>
             </Space>
           </Dropdown>
         </Header>
-
-        {/* Contenu */}
         <Content
           style={{
-            margin: '16px',
-            padding: '16px',
+            margin: '24px',
+            padding: '24px',
             background: '#ffffff',
             borderRadius: '12px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+            minHeight: '280px',
           }}
         >
           <Outlet />

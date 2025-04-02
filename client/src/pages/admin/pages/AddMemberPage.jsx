@@ -40,7 +40,7 @@ const AddMemberPage = () => {
     try {
       const token = Cookies.get('token');
       if (!token) {
-        message.error('Authentication expired. Please login again.');
+        message.error('Authentification expirée. Veuillez vous reconnecter.');
         return;
       }
 
@@ -51,10 +51,10 @@ const AddMemberPage = () => {
         },
       });
 
-      message.success('Member added successfully');
+      message.success('Membre ajouté avec succès');
       form.resetFields();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to add member';
+      const errorMessage = error.response?.data?.message || 'Échec de l\'ajout du membre';
       message.error(errorMessage);
       console.error('API Error:', error);
     } finally {
@@ -98,10 +98,10 @@ const AddMemberPage = () => {
             color: '#1890ff',
           }}
         >
-          Add New Team Member
+          Ajouter un Nouveau Membre
         </Title>
         <Text type="secondary" style={{ fontSize: '16px' }}>
-          Fill in the details below to register a new member
+          Remplissez les détails ci-dessous pour enregistrer un nouveau membre
         </Text>
       </div>
 
@@ -121,11 +121,11 @@ const AddMemberPage = () => {
             <Form.Item
               name="cin"
               label="CIN"
-              rules={[{ required: true, message: 'Please input CIN' }]}
+              rules={[{ required: true, message: 'Veuillez saisir le CIN' }]}
             >
               <Input
                 prefix={<IdcardOutlined style={{ color: '#1890ff' }} />}
-                placeholder="Unique Citizen ID Number"
+                placeholder="Numéro d'identité unique"
                 style={{
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
@@ -139,12 +139,12 @@ const AddMemberPage = () => {
           <Col xs={24} md={12}>
             <Form.Item
               name="nom"
-              label="Full Name"
-              rules={[{ required: true, message: 'Please input member name' }]}
+              label="Nom Complet"
+              rules={[{ required: true, message: 'Veuillez saisir le nom du membre' }]}
             >
               <Input
                 prefix={<UserOutlined style={{ color: '#1890ff' }} />}
-                placeholder="Member's full name"
+                placeholder="Nom complet du membre"
                 style={{
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
@@ -158,15 +158,15 @@ const AddMemberPage = () => {
           <Col xs={24} md={12}>
             <Form.Item
               name="email"
-              label="Email Address"
+              label="Adresse Email"
               rules={[
-                { required: true, message: 'Please input email' },
-                { type: 'email', message: 'Invalid email format' },
+                { required: true, message: 'Veuillez saisir l\'email' },
+                { type: 'email', message: 'Format d\'email invalide' },
               ]}
             >
               <Input
                 prefix={<MailOutlined style={{ color: '#1890ff' }} />}
-                placeholder="example@company.com"
+                placeholder="exemple@societe.com"
                 type="email"
                 style={{
                   borderRadius: '8px',
@@ -181,12 +181,12 @@ const AddMemberPage = () => {
           <Col xs={24} md={12}>
             <Form.Item
               name="poste"
-              label="Position/Grade"
-              rules={[{ required: true, message: 'Please input position' }]}
+              label="Poste/Grade"
+              rules={[{ required: true, message: 'Veuillez saisir le poste' }]}
             >
               <Input
                 prefix={<SolutionOutlined style={{ color: '#1890ff' }} />}
-                placeholder="Current position in company"
+                placeholder="Poste actuel dans l'entreprise"
                 style={{
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
@@ -200,17 +200,17 @@ const AddMemberPage = () => {
           <Col xs={24} md={12}>
             <Form.Item
               name="num_tele"
-              label="Contact Number"
+              label="Numéro de Téléphone"
               rules={[
                 {
                   pattern: /^[0-9]{8,20}$/,
-                  message: 'Please enter valid phone number (8-20 digits)',
+                  message: 'Veuillez saisir un numéro de téléphone valide (8-20 chiffres)',
                 },
               ]}
             >
               <Input
                 prefix={<PhoneOutlined style={{ color: '#1890ff' }} />}
-                placeholder="Mobile or office number"
+                placeholder="Numéro mobile ou de bureau"
                 style={{
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
@@ -224,12 +224,12 @@ const AddMemberPage = () => {
           <Col xs={24} md={12}>
             <Form.Item
               name="password"
-              label="Password"
-              rules={[{ required: true, message: 'Please input password' }]}
+              label="Mot de Passe"
+              rules={[{ required: true, message: 'Veuillez saisir le mot de passe' }]}
             >
               <Input.Password
                 prefix={<LockOutlined style={{ color: '#1890ff' }} />}
-                placeholder="Strong password"
+                placeholder="Mot de passe fort"
                 style={{
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
@@ -243,20 +243,20 @@ const AddMemberPage = () => {
           <Col xs={24}>
             <Form.Item
               name="role"
-              label="System Role"
-              rules={[{ required: true, message: 'Please select role' }]}
+              label="Rôle dans le Système"
+              rules={[{ required: true, message: 'Veuillez sélectionner un rôle' }]}
             >
               <Select
-                placeholder="Select access level"
+                placeholder="Sélectionner le niveau d'accès"
                 style={{
                   borderRadius: '8px',
                   border: '1px solid #d9d9d9',
                   transition: 'border-color 0.3s ease',
                 }}
               >
-                <Option value="0">Administrator (Full Access)</Option>
-                <Option value="1">Manager (Limited Access)</Option>
-                <Option value="2">Employee (Basic Access)</Option>
+                <Option value="0">Administrateur (Accès Complet)</Option>
+                <Option value="1">Chef de Projet (Accès Limité)</Option>
+                <Option value="2">Employé (Accès Basique)</Option>
               </Select>
             </Form.Item>
           </Col>
@@ -282,7 +282,7 @@ const AddMemberPage = () => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = '#40a9ff')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = '#1890ff')}
               >
-                Register Member
+                Enregistrer le Membre
               </Button>
             </Form.Item>
           </Col>

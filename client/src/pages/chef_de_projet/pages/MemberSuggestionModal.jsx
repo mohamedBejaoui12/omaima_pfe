@@ -51,7 +51,7 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
     return (
       <Tooltip 
         key={skill.name} 
-        title={`Proficiency: ${skill.level}`}
+        title={`Niveau de compétence: ${skill.level}`}
       >
         <Tag color={levelColors[skill.level] || 'default'}>
           {skill.name}
@@ -62,11 +62,11 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
 
   return (
     <Modal
-      title={`${member.name} - Comprehensive Profile`}
+      title={`${member.name} - Profil Complet`}
       visible={visible}
       onCancel={onClose}
       footer={[
-        <Button key="close" onClick={onClose}>Close</Button>
+        <Button key="close" onClick={onClose}>Fermer</Button>
       ]}
       width={800}
     >
@@ -80,10 +80,10 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
         </Col>
         <Col span={16}>
           <Descriptions bordered column={1}>
-            <Descriptions.Item label="Name">
+            <Descriptions.Item label="Nom">
               <Typography.Title level={4}>{member.name}</Typography.Title>
             </Descriptions.Item>
-            <Descriptions.Item label="Position">
+            <Descriptions.Item label="Poste">
               <Tag color="processing">{member.contact.position}</Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Contact">
@@ -91,8 +91,8 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
                 <Tooltip title="Email">
                   <MailOutlined /> {member.email}
                 </Tooltip>
-                <Tooltip title="Phone">
-                  <PhoneOutlined /> {member.contact.phone || 'Not provided'}
+                <Tooltip title="Téléphone">
+                  <PhoneOutlined /> {member.contact.phone || 'Non fourni'}
                 </Tooltip>
               </Space>
             </Descriptions.Item>
@@ -100,15 +100,15 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
         </Col>
       </Row>
 
-      <Divider orientation="left">Professional Skills</Divider>
+      <Divider orientation="left">Compétences Professionnelles</Divider>
       <Space size={[8, 16]} wrap>
         {member.competencies?.map(renderSkillBadge)}
       </Space>
 
-      <Divider orientation="left">Project Experience</Divider>
+      <Divider orientation="left">Expérience de Projet</Divider>
       <List
         size="small"
-        header={`Total Projects: ${member.projectCount}`}
+        header={`Projets Totaux: ${member.projectCount}`}
         bordered
         dataSource={member.previousProjects}
         renderItem={(project) => (
@@ -118,10 +118,10 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
         )}
       />
 
-      <Divider orientation="left">AI Recommendation</Divider>
+      <Divider orientation="left">Recommandation IA</Divider>
       {member.recommendationNotes && (
         <Alert 
-          message="AI Insights" 
+          message="Analyse IA" 
           description={member.recommendationNotes}
           type="info"
           showIcon 
@@ -129,7 +129,7 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
       )}
 
       <Statistic 
-        title="Match Score" 
+        title="Score de Correspondance" 
         value={member.matchScore} 
         suffix="/ 100" 
         prefix={<CheckCircleOutlined />}
@@ -141,165 +141,256 @@ const MemberDetailModal = ({ member, visible, onClose }) => {
 const MemberSuggestionModal = ({ 
   projectDescription: initialProjectDescription = '', 
   visible: initialVisible = true, 
-  onClose: initialOnClose 
+  onClose: initialOnClose = () => {}, 
+  onAssign: initialOnAssign = () => {} 
 }) => {
   const [projectDescription, setProjectDescription] = useState(initialProjectDescription);
+  const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [error, setError] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [visible, setVisible] = useState(initialVisible);
   const navigate = useNavigate();
 
-  // Default close handler if not provided
-  const handleClose = initialOnClose || (() => {
+  const onClose = () => {
     setVisible(false);
-    navigate('/chef-de-projet');  // Navigate back to project manager dashboard
-  });
-
-  // Add a state for project description input
-  const [descriptionInput, setDescriptionInput] = useState('');
-
-  const handleDescriptionSubmit = () => {
-    if (descriptionInput.trim().length >= 10) {
-      setProjectDescription(descriptionInput);
-    } else {
-      message.warning('Project description must be at least 10 characters long');
-    }
+    initialOnClose();
   };
 
-  const [loading, setLoading] = useState(false);
-  const [members, setMembers] = useState([]);
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const onAssign = (member) => {
+    initialOnAssign(member);
+    message.success(`${member.name} a été assigné au projet avec succès!`);
+    setVisible(false);
+  };
+
+  useEffect(() => {
+    setProjectDescription(initialProjectDescription);
+  }, [initialProjectDescription]);
+
+  useEffect(() => {
+    setVisible(initialVisible);
+  }, [initialVisible]);
 
   const fetchSuggestedMembers = async () => {
-    if (!projectDescription) return;
-  
+    if (!projectDescription.trim()) {
+      setError("Veuillez fournir une description de projet pour obtenir des suggestions.");
+      return;
+    }
+
     setLoading(true);
+    setError(null);
+    
     try {
       const token = Cookies.get('token');
-      console.log("Making API request with project description length:", projectDescription.length);
-      
-      const response = await axios.post(
-        '/api/project-manager/suggest-members', 
-        { projectDescription },
-        {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-  
-      console.log("API response:", response.data);
-      setMembers(response.data.members || []);
-      message.success(`Found ${response.data.members?.length || 0} potential members`);
-    } catch (error) {
-      console.error('Member suggestion error:', error);
-      // More detailed error handling
-      if (error.response) {
-        console.error('Error response data:', error.response.data);
-        message.error(`Server error: ${error.response.data?.message || 'Unknown server error'}`);
-      } else if (error.request) {
-        message.error('No response received from server. Check your network connection.');
-      } else {
-        message.error(`Error: ${error.message}`);
+      if (!token) {
+        setError("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
+        return;
       }
+
+      const response = await axios.post(
+        'http://localhost:5000/api/project-manager/suggest-members',
+        { projectDescription },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data && Array.isArray(response.data)) {
+        setMembers(response.data);
+      } else {
+        setError("Format de réponse inattendu du serveur.");
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des suggestions de membres:', error);
+      setError(error.response?.data?.message || "Échec de la récupération des suggestions de membres.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (projectDescription) {
-      fetchSuggestedMembers();
-    }
-  }, [projectDescription]);
-
-  const handleMemberSelect = (member) => {
+  const handleViewDetails = (member) => {
     setSelectedMember(member);
     setDetailModalVisible(true);
   };
 
+  const handleAssignMember = async (member) => {
+    try {
+      const token = Cookies.get('token');
+      if (!token) {
+        message.error("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
+        return;
+      }
+
+      const userCookie = Cookies.get('user');
+      const currentUser = userCookie ? JSON.parse(userCookie) : null;
+      
+      if (!currentUser || !currentUser.cin) {
+        message.error("Informations utilisateur non disponibles. Veuillez vous reconnecter.");
+        return;
+      }
+
+      // Récupérer le projet actuel du chef de projet
+      const projectResponse = await axios.get(
+        'http://localhost:5000/api/project-manager/current-project',
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          params: { managerCin: currentUser.cin }
+        }
+      );
+
+      if (!projectResponse.data || !projectResponse.data.id) {
+        message.error("Aucun projet actif trouvé pour ce chef de projet.");
+        return;
+      }
+
+      const projectId = projectResponse.data.id;
+
+      // Assigner le membre au projet
+      await axios.post(
+        'http://localhost:5000/api/project-manager/assign-project-member',
+        {
+          memberId: member.id,
+          projectId: projectId,
+          managerCin: currentUser.cin
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      message.success(`${member.name} a été assigné au projet avec succès!`);
+      onAssign(member);
+      
+      // Rediriger vers la page des membres du projet
+      navigate('/chef-de-projet/members');
+    } catch (error) {
+      console.error('Erreur lors de l\'assignation du membre:', error);
+      message.error(error.response?.data?.message || "Échec de l'assignation du membre au projet.");
+    }
+  };
+
   return (
-    <>
-      <Modal
-        title="AI-Powered Member Suggestions"
-        visible={visible}
-        onCancel={handleClose}
-        footer={null}
-        width={800}
-      >
-        {!projectDescription ? (
-          <Card>
-            <Title level={4}>Enter Project Description</Title>
-            <TextArea
-              rows={4}
-              placeholder="Describe your project requirements, skills needed, and project goals..."
-              value={descriptionInput}
-              onChange={(e) => setDescriptionInput(e.target.value)}
-            />
+    <Modal
+      title="Suggérer des Membres pour le Projet"
+      visible={visible}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+    >
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <div>
+          <Title level={4}>Description du Projet</Title>
+          <TextArea
+            rows={4}
+            value={projectDescription}
+            onChange={(e) => setProjectDescription(e.target.value)}
+            placeholder="Décrivez votre projet, y compris les technologies, les compétences requises et les objectifs..."
+          />
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
             <Button 
               type="primary" 
-              onClick={handleDescriptionSubmit}
-              style={{ marginTop: 10 }}
+              onClick={fetchSuggestedMembers}
+              loading={loading}
             >
-              Generate Member Suggestions
+              Trouver des Membres Correspondants
             </Button>
-          </Card>
-        ) : loading ? (
-          <div style={{ textAlign: 'center' }}>
-            <Spin size="large" />
-            <p>Generating intelligent member recommendations...</p>
           </div>
-        ) : members.length > 0 ? (
-          <List
-            grid={{ gutter: 16, column: 3 }}
-            dataSource={members}
-            renderItem={(member) => (
-              <List.Item>
-                <Card
-                  hoverable
-                  onClick={() => handleMemberSelect(member)}
-                  cover={
-                    <Avatar 
-                      size={200} 
-                      icon={<UserOutlined />} 
-                      style={{ margin: '0 auto', display: 'block' }} 
-                    />
-                  }
-                >
-                  <Card.Meta 
-                    title={member.name} 
-                    description={`${member.position}`} 
-                  />
-                  <Progress 
-                    percent={member.matchScore} 
-                    status="active" 
-                    strokeColor={{
-                      '0%': '#108ee9',
-                      '100%': '#87d068',
-                    }}
-                  />
-                  <div style={{ marginTop: 10, textAlign: 'center' }}>
-                    <Tag color="blue">Match: {member.matchScore}%</Tag>
-                  </div>
-                </Card>
-              </List.Item>
-            )}
-          />
-        ) : (
-          <Alert 
-            message="No Members Found" 
-            description="Try adjusting your project description or broadening the requirements." 
-            type="warning" 
+        </div>
+
+        {error && (
+          <Alert
+            message="Erreur"
+            description={error}
+            type="error"
+            showIcon
           />
         )}
-      </Modal>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 16 }}>Recherche des meilleurs membres pour votre projet...</div>
+          </div>
+        ) : members.length > 0 ? (
+          <>
+            <Title level={4}>Membres Suggérés</Title>
+            <List
+              itemLayout="vertical"
+              dataSource={members}
+              renderItem={member => (
+                <Card 
+                  style={{ marginBottom: 16 }}
+                  hoverable
+                >
+                  <List.Item
+                    key={member.id}
+                    actions={[
+                      <Button 
+                        key="details" 
+                        onClick={() => handleViewDetails(member)}
+                        icon={<InfoCircleOutlined />}
+                      >
+                        Détails
+                      </Button>,
+                      <Button 
+                        key="assign" 
+                        type="primary" 
+                        onClick={() => handleAssignMember(member)}
+                        icon={<CheckCircleOutlined />}
+                      >
+                        Assigner au Projet
+                      </Button>
+                    ]}
+                  >
+                    <List.Item.Meta
+                      avatar={<Avatar size={64} icon={<UserOutlined />} />}
+                      title={<a onClick={() => handleViewDetails(member)}>{member.name}</a>}
+                      description={
+                        <>
+                          <div>{member.contact.position}</div>
+                          <div style={{ marginTop: 8 }}>
+                            <Space size={[0, 8]} wrap>
+                              {member.competencies?.slice(0, 3).map((comp, index) => (
+                                <Tag key={index} color="blue">{comp.name}</Tag>
+                              ))}
+                              {member.competencies?.length > 3 && (
+                                <Tag>+{member.competencies.length - 3} plus</Tag>
+                              )}
+                            </Space>
+                          </div>
+                        </>
+                      }
+                    />
+                    <div style={{ marginTop: 16 }}>
+                      <Tooltip title={`Score de correspondance: ${member.matchScore}%`}>
+                        <Progress 
+                          percent={member.matchScore} 
+                          status="active" 
+                          strokeColor={{
+                            '0%': '#108ee9',
+                            '100%': '#87d068',
+                          }}
+                        />
+                      </Tooltip>
+                    </div>
+                  </List.Item>
+                </Card>
+              )}
+            />
+          </>
+        ) : !loading && !error && (
+          <Alert
+            message="Aucun résultat"
+            description="Entrez une description de projet et cliquez sur 'Trouver des Membres Correspondants' pour voir les suggestions."
+            type="info"
+            showIcon
+          />
+        )}
+      </Space>
 
       <MemberDetailModal 
         member={selectedMember}
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
       />
-    </>
+    </Modal>
   );
 };
 

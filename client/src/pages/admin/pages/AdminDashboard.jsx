@@ -76,7 +76,7 @@ const AdminDashboard = () => {
           textAlign: 'center',
         }}
       >
-        Admin Dashboard
+        Tableau de Bord Administrateur
       </Title>
       <Row gutter={[24, 24]}>
         {/* Total Users */}
@@ -87,83 +87,56 @@ const AdminDashboard = () => {
               background: '#f0f5ff',
               borderRadius: '16px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              transition: 'transform 0.3s ease',
             }}
-            hoverable
           >
             <Statistic
-              title="Total Users"
+              title="Utilisateurs Totaux"
               value={stats.totalUsers}
-              prefix={<UserOutlined style={{ fontSize: '24px', color: '#1890ff' }} />}
-              valueStyle={{ fontSize: '28px', fontWeight: 'bold', color: '#1890ff' }}
+              prefix={<UserOutlined />}
+              valueStyle={{ color: '#1890ff', fontWeight: 'bold' }}
             />
           </Card>
         </Col>
-
+    
         {/* Total Projects */}
         <Col span={12}>
           <Card
             bordered={false}
             style={{
-              background: '#e6fffb',
+              background: '#f6ffed',
               borderRadius: '16px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              transition: 'transform 0.3s ease',
             }}
-            hoverable
           >
             <Statistic
-              title="Total Projects"
+              title="Projets Totaux"
               value={stats.totalProjects}
-              prefix={<ProjectOutlined style={{ fontSize: '24px', color: '#13c2c2' }} />}
-              valueStyle={{ fontSize: '28px', fontWeight: 'bold', color: '#13c2c2' }}
+              prefix={<ProjectOutlined />}
+              valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
             />
           </Card>
         </Col>
-
-        {/* Projects En Cours */}
+    
+        {/* Projects In Progress */}
         <Col span={8}>
           <Card
             bordered={false}
             style={{
-              background: '#fff7e6',
+              background: '#e6f7ff',
               borderRadius: '16px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              transition: 'transform 0.3s ease',
             }}
-            hoverable
           >
             <Statistic
-              title="Projects En Cours"
+              title="Projets En Cours"
               value={stats.projectStatus.enCours}
-              prefix={<SyncOutlined spin style={{ fontSize: '24px', color: '#faad14' }} />}
-              valueStyle={{ fontSize: '28px', fontWeight: 'bold', color: '#faad14' }}
+              prefix={<SyncOutlined />}
+              valueStyle={{ color: '#1890ff', fontWeight: 'bold' }}
             />
           </Card>
         </Col>
-
-        {/* Projects Annulés */}
-        <Col span={8}>
-          <Card
-            bordered={false}
-            style={{
-              background: '#fff1f0',
-              borderRadius: '16px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              transition: 'transform 0.3s ease',
-            }}
-            hoverable
-          >
-            <Statistic
-              title="Projects Annulés"
-              value={stats.projectStatus.annuler}
-              prefix={<CloseCircleOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
-              valueStyle={{ fontSize: '28px', fontWeight: 'bold', color: '#ff4d4f' }}
-            />
-          </Card>
-        </Col>
-
-        {/* Projects Terminés */}
+    
+        {/* Completed Projects */}
         <Col span={8}>
           <Card
             bordered={false}
@@ -171,15 +144,32 @@ const AdminDashboard = () => {
               background: '#f6ffed',
               borderRadius: '16px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-              transition: 'transform 0.3s ease',
             }}
-            hoverable
           >
             <Statistic
-              title="Projects Terminés"
+              title="Projets Terminés"
               value={stats.projectStatus.terminer}
-              prefix={<CheckCircleOutlined style={{ fontSize: '24px', color: '#52c41a' }} />}
-              valueStyle={{ fontSize: '28px', fontWeight: 'bold', color: '#52c41a' }}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
+            />
+          </Card>
+        </Col>
+    
+        {/* Cancelled Projects */}
+        <Col span={8}>
+          <Card
+            bordered={false}
+            style={{
+              background: '#fff1f0',
+              borderRadius: '16px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <Statistic
+              title="Projets Annulés"
+              value={stats.projectStatus.annuler}
+              prefix={<CloseCircleOutlined />}
+              valueStyle={{ color: '#ff4d4f', fontWeight: 'bold' }}
             />
           </Card>
         </Col>

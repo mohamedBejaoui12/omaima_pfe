@@ -17,8 +17,42 @@ import { ticketService } from '../../services/ticketService';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-// Rest of the component remains the same
-// Rest of the file remains the same
+// Helper functions for status and priority colors
+const getStatusColor = (status) => {
+  switch(status) {
+    case 'pending': return 'orange';
+    case 'in_progress': return 'blue';
+    case 'resolved': return 'green';
+    default: return 'gray';
+  }
+};
+
+const getStatusText = (status) => {
+  switch(status) {
+    case 'pending': return 'EN ATTENTE';
+    case 'in_progress': return 'EN COURS';
+    case 'resolved': return 'RÉSOLU';
+    default: return 'INCONNU';
+  }
+};
+
+const getPriorityColor = (priority) => {
+  switch(priority) {
+    case 'low': return 'green';
+    case 'medium': return 'orange';
+    case 'high': return 'red';
+    default: return 'blue';
+  }
+};
+
+const getPriorityText = (priority) => {
+  switch(priority) {
+    case 'low': return 'FAIBLE';
+    case 'medium': return 'MOYENNE';
+    case 'high': return 'ÉLEVÉE';
+    default: return priority.toUpperCase();
+  }
+};
 
 const TicketDetailsPage = () => {
   const { ticketId } = useParams();
@@ -34,7 +68,7 @@ const TicketDetailsPage = () => {
         setTicket(response.ticket);
         setResponses(response.responses);
       } catch (error) {
-        console.error('Error loading ticket:', error);
+        console.error('Erreur lors du chargement du ticket:', error);
       } finally {
         setLoading(false);
       }
@@ -48,9 +82,9 @@ const TicketDetailsPage = () => {
       const response = await ticketService.getTicketDetails(ticketId);
       setResponses(response.responses);
       form.resetFields();
-      message.success('Response submitted successfully');
+      message.success('Réponse soumise avec succès');
     } catch (error) {
-      message.error('Failed to submit response');
+      message.error('Échec de la soumission de la réponse');
     }
   };
 
@@ -62,19 +96,19 @@ const TicketDetailsPage = () => {
         <Space>
           <Title level={4} style={{ margin: 0 }}>{ticket.subject}</Title>
           <Tag color={getStatusColor(ticket.status)}>
-            {ticket.status.replace('_', ' ').toUpperCase()}
+            {getStatusText(ticket.status)}
           </Tag>
         </Space>
       }>
-        <Text strong>Created by: </Text>
+        <Text strong>Créé par: </Text>
         <Text>{ticket.user_name}</Text>
         <br />
-        <Text strong>Created at: </Text>
-        <Text>{new Date(ticket.created_at).toLocaleString()}</Text>
+        <Text strong>Créé le: </Text>
+        <Text>{new Date(ticket.created_at).toLocaleString('fr-FR')}</Text>
         <br />
-        <Text strong>Priority: </Text>
+        <Text strong>Priorité: </Text>
         <Tag color={getPriorityColor(ticket.priority)}>
-          {ticket.priority.toUpperCase()}
+          {getPriorityText(ticket.priority)}
         </Tag>
 
         <div style={{ margin: '24px 0' }}>
@@ -84,7 +118,7 @@ const TicketDetailsPage = () => {
           </div>
         </div>
 
-        <Title level={5}>Responses ({responses.length})</Title>
+        <Title level={5}>Réponses ({responses.length})</Title>
         <div style={{ marginBottom: 24 }}>
           {responses.map((response) => (
             <Card 
@@ -94,9 +128,9 @@ const TicketDetailsPage = () => {
               title={
                 <Space>
                   <Text strong>{response.responder_name}</Text>
-                  <Tag>{response.responder_role === '0' ? 'Admin' : 'Member'}</Tag>
+                  <Tag>{response.responder_role === '0' ? 'Admin' : 'Membre'}</Tag>
                   <Text type="secondary">
-                    {new Date(response.created_at).toLocaleString()}
+                    {new Date(response.created_at).toLocaleString('fr-FR')}
                   </Text>
                 </Space>
               }
@@ -106,40 +140,27 @@ const TicketDetailsPage = () => {
           ))}
         </div>
 
-        <Form form={form} onFinish={handleResponseSubmit}>
-          <Form.Item
-            name="message"
-            rules={[{ required: true, message: 'Please enter your response' }]}
-          >
-            <TextArea rows={4} placeholder="Enter your response..." />
-          </Form.Item>
-          <Button type="primary" htmlType="submit">
-            Add Response
-          </Button>
-        </Form>
+        {ticket.status !== 'resolved' && (
+          <div>
+            <Title level={5}>Ajouter une réponse</Title>
+            <Form form={form} onFinish={handleResponseSubmit}>
+              <Form.Item
+                name="message"
+                rules={[{ required: true, message: 'Veuillez saisir votre réponse' }]}
+              >
+                <TextArea rows={4} placeholder="Votre réponse..." />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Envoyer la réponse
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+        )}
       </Card>
     </div>
   );
-};
-
-// Helper functions
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'pending': return 'orange';
-    case 'in_progress': return 'blue';
-    case 'resolved': return 'green';
-    case 'closed': return 'gray';
-    default: return 'gray';
-  }
-};
-
-const getPriorityColor = (priority) => {
-  switch (priority) {
-    case 'low': return 'green';
-    case 'medium': return 'orange';
-    case 'high': return 'red';
-    default: return 'gray';
-  }
 };
 
 export default TicketDetailsPage;

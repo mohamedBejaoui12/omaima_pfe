@@ -25,6 +25,7 @@ const { Title } = Typography;
 const AdminLayout = () => {
   const navigate = useNavigate();
 
+  // Update the handleLogout function
   const handleLogout = () => {
     try {
       // Remove all authentication-related cookies
@@ -40,13 +41,13 @@ const AdminLayout = () => {
       });
 
       // Show success message
-      message.success('Logged out successfully');
+      message.success('Déconnecté avec succès');
 
       // Redirect to login page
       navigate('/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
-      message.error('Failed to log out');
+      message.error('Échec de la déconnexion');
     }
   };
 
@@ -54,32 +55,32 @@ const AdminLayout = () => {
     {
       key: 'dashboard',
       icon: <DashboardOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/dashboard">Dashboard</Link>,
+      label: <Link to="/admin/dashboard">Tableau de Bord</Link>,
     },
     {
       key: 'add-member',
       icon: <UserAddOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/add-member">Add Member</Link>,
+      label: <Link to="/admin/add-member">Ajouter un Membre</Link>,
     },
     {
       key: 'manage-users',
       icon: <UsergroupAddOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/manage-users">Manage Users</Link>,
+      label: <Link to="/admin/manage-users">Gérer les Utilisateurs</Link>,
     },
     {
       key: 'manage-projects',
       icon: <ProjectOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/manage-projects">Manage Projects</Link>,
+      label: <Link to="/admin/manage-projects">Gérer les Projets</Link>,
     },
     {
       key: 'manage-competences',
       icon: <ProjectOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/manage-competences">Manage Competences</Link>,
+      label: <Link to="/admin/manage-competences">Gérer les Compétences</Link>,
     },
     {
       key: 'support-tickets',
       icon: <QuestionCircleOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/support-tickets">Support Tickets</Link>,
+      label: <Link to="/admin/support-tickets">Tickets de Support</Link>,
     },
   ];
 
@@ -89,14 +90,8 @@ const AdminLayout = () => {
         key="logout"
         icon={<LogoutOutlined style={{ fontSize: '18px' }} />}
         onClick={handleLogout}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '12px 24px',
-          transition: 'background 0.3s ease',
-        }}
       >
-        Logout
+        Déconnexion
       </Menu.Item>
     </Menu>
   );

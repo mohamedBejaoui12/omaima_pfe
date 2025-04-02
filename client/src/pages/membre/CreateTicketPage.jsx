@@ -15,49 +15,49 @@ const CreateTicketPage = () => {
       await ticketService.createTicket(values);
       navigate('/member/support-tickets');
     } catch (error) {
-      console.error('Ticket creation failed:', error);
+      console.error('Échec de création du ticket:', error);
     }
   };
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: 24 }}>
-      <Title level={3}>Create New Support Ticket</Title>
+      <Title level={3}>Créer un Nouveau Ticket de Support</Title>
       <Form
         form={form}
         layout="vertical"
         onFinish={onFinish}
       >
         <Form.Item
-          label="Subject"
+          label="Sujet"
           name="subject"
-          rules={[{ required: true, message: 'Please enter a subject' }]}
+          rules={[{ required: true, message: 'Veuillez saisir un sujet' }]}
         >
-          <Input placeholder="Brief description of your issue" />
+          <Input placeholder="Brève description de votre problème" />
         </Form.Item>
 
         <Form.Item
-          label="Priority"
+          label="Priorité"
           name="priority"
           initialValue="medium"
         >
           <Select>
-            <Select.Option value="low">Low</Select.Option>
-            <Select.Option value="medium">Medium</Select.Option>
-            <Select.Option value="high">High</Select.Option>
+            <Select.Option value="low">Faible</Select.Option>
+            <Select.Option value="medium">Moyenne</Select.Option>
+            <Select.Option value="high">Élevée</Select.Option>
           </Select>
         </Form.Item>
 
         <Form.Item
           label="Description"
           name="description"
-          rules={[{ required: true, message: 'Please provide details about your issue' }]}
+          rules={[{ required: true, message: 'Veuillez fournir des détails sur votre problème' }]}
         >
-          <TextArea rows={6} placeholder="Describe your issue in detail..." />
+          <TextArea rows={6} placeholder="Décrivez votre problème en détail..." />
         </Form.Item>
 
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            Submit Ticket
+            Soumettre le Ticket
           </Button>
         </Form.Item>
       </Form>

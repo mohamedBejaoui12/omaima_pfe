@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, Space, Typography } from 'antd';
-import { EyeOutlined } from '@ant-design/icons'; // Add this import
+import { EyeOutlined } from '@ant-design/icons';
 import { ticketService } from '../../services/ticketService';
-import { Link, useNavigate } from 'react-router-dom'; // Add useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 
 const TicketListPage = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Add this
+  const navigate = useNavigate();
 
   // Function to handle viewing a ticket
   const handleViewTicket = (ticketId) => {
@@ -22,7 +22,7 @@ const TicketListPage = () => {
         const response = await ticketService.getUserTickets();
         setTickets(response.tickets);
       } catch (error) {
-        console.error('Error loading tickets:', error);
+        console.error('Erreur lors du chargement des tickets:', error);
       } finally {
         setLoading(false);
       }
@@ -32,29 +32,34 @@ const TicketListPage = () => {
 
   const columns = [
     {
-      title: 'Subject',
+      title: 'Sujet',
       dataIndex: 'subject',
       render: (text, record) => (
         <Link to={`/member/support-tickets/${record.id}`}>{text}</Link>
       ),
     },
     {
-      title: 'Status',
+      title: 'Statut',
       dataIndex: 'status',
       render: (status) => {
         let color = status === 'pending' ? 'orange' : 
                    status === 'in_progress' ? 'blue' : 
                    status === 'resolved' ? 'green' : 'gray';
-        return <Tag color={color}>{status.replace('_', ' ').toUpperCase()}</Tag>;
+        
+        let statusText = status === 'pending' ? 'EN ATTENTE' :
+                        status === 'in_progress' ? 'EN COURS' :
+                        status === 'resolved' ? 'RÉSOLU' : 'INCONNU';
+        
+        return <Tag color={color}>{statusText}</Tag>;
       }
     },
     {
-      title: 'Created At',
+      title: 'Créé le',
       dataIndex: 'created_at',
-      render: (date) => new Date(date).toLocaleDateString()
+      render: (date) => new Date(date).toLocaleDateString('fr-FR')
     },
     {
-      title: 'Responses',
+      title: 'Réponses',
       dataIndex: 'response_count',
     },
     {
@@ -67,7 +72,7 @@ const TicketListPage = () => {
           icon={<EyeOutlined />}
           onClick={() => handleViewTicket(record.id)}
         >
-          View
+          Voir
         </Button>
       ),
     }
@@ -76,9 +81,9 @@ const TicketListPage = () => {
   return (
     <div style={{ padding: '24px' }}>
       <Space style={{ marginBottom: 24, width: '100%', justifyContent: 'space-between' }}>
-        <Title level={3}>My Support Tickets</Title>
+        <Title level={3}>Mes Tickets de Support</Title>
         <Button type="primary" href="/member/support-tickets/new">
-          Create New Ticket
+          Créer un Nouveau Ticket
         </Button>
       </Space>
       <Table 

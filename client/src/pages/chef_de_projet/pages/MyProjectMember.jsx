@@ -23,7 +23,7 @@ const ProjectMembers = () => {
   const [memberToRemove, setMemberToRemove] = useState(null);
   const navigate = useNavigate();
 
-  // Get the current user's CIN from the cookie
+  // Récupérer le CIN de l'utilisateur actuel à partir du cookie
   const userCookie = Cookies.get('user');
   const currentUserCin = userCookie ? JSON.parse(userCookie).cin : null;
 
@@ -32,8 +32,6 @@ const ProjectMembers = () => {
       fetchUsers(currentUserCin);
     }
   }, [currentUserCin]);
-
-  // Remove fetchCurrentProject function as it's no longer needed
 
   const fetchUsers = async (memberId) => {
     setLoading(true);
@@ -46,7 +44,7 @@ const ProjectMembers = () => {
 
       const response = await axios.post(
         'http://localhost:5000/api/project-manager/members',
-        { memberId }, // Send the manager's CIN
+        { memberId }, // Envoyer le CIN du manager
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUsers(response.data);
@@ -57,13 +55,13 @@ const ProjectMembers = () => {
     }
   };
 
-  // Add showRemoveModal function that was missing
+  // Afficher la modal de suppression
   const showRemoveModal = (memberId) => {
     setMemberToRemove(memberId);
     setRemoveModalVisible(true);
   };
   
-  // Update handleRemoveMember to include the correct project ID
+  // Gérer la suppression d'un membre
   const handleRemoveMember = async () => {
     try {
       const token = Cookies.get('token');
@@ -72,20 +70,20 @@ const ProjectMembers = () => {
         return;
       }
   
-      // Get project ID from the user record
+      // Obtenir l'ID du projet à partir de l'enregistrement de l'utilisateur
       const userToRemove = users.find(user => user.cin === memberToRemove);
       if (!userToRemove) {
         message.error("Membre non trouvé.");
         return;
       }
   
-      // Log the user data to check the correct field name
-      console.log('User to remove:', userToRemove);
+      // Journaliser les données de l'utilisateur pour vérifier le nom de champ correct
+      console.log('Utilisateur à supprimer:', userToRemove);
   
       await axios.post(
         'http://localhost:5000/api/project-manager/remove-project-member',
         {
-          projectId: userToRemove.projet_id, // Changed to match the database field
+          projectId: userToRemove.projet_id, // Modifié pour correspondre au champ de la base de données
           memberId: userToRemove.cin,
           managerCin: currentUserCin
         },
@@ -101,14 +99,14 @@ const ProjectMembers = () => {
     }
   };
 
-  // Update the columns array to use project_name instead of nom_projet
+  // Mettre à jour le tableau des colonnes pour utiliser project_name au lieu de nom_projet
   const columns = [
     { title: 'CIN', dataIndex: 'cin', key: 'cin' },
     { title: 'Nom', dataIndex: 'nom', key: 'nom' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     {
       title: 'Projet',
-      dataIndex: 'project_name', // Updated to match the backend response
+      dataIndex: 'project_name', // Mis à jour pour correspondre à la réponse du backend
       key: 'project_name',
       render: (project_name) => project_name || 'Non assigné'
     },
@@ -143,14 +141,12 @@ const ProjectMembers = () => {
       render: (_, record) => (
         <Space>
           {record.role !== '0' && (
-            <Tooltip title="Supprimer ce membre">
+            <Tooltip title="Supprimer du projet">
               <Button
+                danger
                 icon={<DeleteOutlined />}
-                type="danger"
                 onClick={() => showRemoveModal(record.cin)}
-              >
-                Supprimer
-              </Button>
+              />
             </Tooltip>
           )}
         </Space>
@@ -159,24 +155,18 @@ const ProjectMembers = () => {
   ];
 
   return (
-    <div>
-      {/* Titre principal */}
-      <Title level={2}>Tous les membres</Title>
-
-      {/* Bouton pour assigner des membres */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div style={{ padding: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <Title level={2}>Membres de Mon Projet</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => {
-            navigate('/chef-de-projet/all-users', { replace: true });
-          }}
+          onClick={() => navigate('/chef-de-projet/suggest-members')}
         >
-          Assigner des membres
+          Ajouter des Membres
         </Button>
       </div>
 
-      {/* Tableau des membres */}
       <Table
         columns={columns}
         dataSource={users}
@@ -185,16 +175,15 @@ const ProjectMembers = () => {
         pagination={{ pageSize: 10 }}
       />
 
-      {/* Modal de confirmation de suppression */}
       <Modal
         title="Confirmer la suppression"
         open={removeModalVisible}
         onOk={handleRemoveMember}
         onCancel={() => setRemoveModalVisible(false)}
-        okText="Supprimer"
+        okText="Confirmer"
         cancelText="Annuler"
       >
-        <p>Êtes-vous sûr de vouloir supprimer ce membre ?</p>
+        <p>Êtes-vous sûr de vouloir supprimer ce membre du projet ?</p>
       </Modal>
     </div>
   );

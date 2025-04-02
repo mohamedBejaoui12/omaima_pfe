@@ -42,13 +42,8 @@ const AssignMembersPage = () => {
       setCurrentUser(JSON.parse(userCookie));
     }
     fetchUsers();
+    fetchProjects();
   }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      fetchProjects();
-    }
-  }, [currentUser]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -58,10 +53,10 @@ const AssignMembersPage = () => {
         message.error("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
         return;
       }
-      const response = await axios.get('http://localhost:5000/api/project-manager/all-users', {
+      const response = await axios.get('http://localhost:5000/api/admin/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUsers(response.data);
+      setUsers(response.data.filter(user => user.role === '2')); // Only show employees
     } catch (error) {
       message.error(error.response?.data?.message || "Échec du chargement des utilisateurs.");
     } finally {
@@ -69,67 +64,77 @@ const AssignMembersPage = () => {
     }
   };
 
-  // Modify fetchCurrentProject to fetch all projects
   const fetchProjects = async () => {
     try {
       const token = Cookies.get('token');
+      if (!token) {
+        message.error("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
+        return;
+      }
       const response = await axios.get('http://localhost:5000/api/project-manager/projects', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProjects(response.data);
+      
+      // Set current project if there's only one
+      if (response.data.length === 1) {
+        setCurrentProject(response.data[0]);
+      }
     } catch (error) {
-      message.error("Échec du chargement des projets.");
+      message.error(error.response?.data?.message || "Échec du chargement des projets.");
     }
   };
 
-  // Update useEffect to fetch projects
-  useEffect(() => {
-    if (currentUser) {
-      fetchProjects(); // Changed from fetchCurrentProject to fetchProjects
-    }
-  }, [currentUser]);
-
-  // Update handleAssignMember to use selected project
-  const handleAssignMember = async () => {
-    if (!selectedUser || !currentProject) {
-      message.error("Veuillez sélectionner un projet et un membre");
+  const handleAssignMember = async (userId) => {
+    if (!currentProject) {
+      message.error("Veuillez sélectionner un projet d'abord.");
       return;
     }
+
     try {
       const token = Cookies.get('token');
+      if (!token) {
+        message.error("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
+        return;
+      }
+
       await axios.post(
         'http://localhost:5000/api/project-manager/assign-project-member',
         {
-          memberId: selectedUser.cin,
+          memberId: userId,
           projectId: currentProject.id,
+          managerCin: currentUser.cin
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+
       message.success("Membre assigné avec succès !");
-      setAssignModalVisible(false);
-      fetchUsers();
+      fetchUsers(); // Refresh the user list
     } catch (error) {
       message.error(error.response?.data?.message || "Échec de l'assignation du membre.");
     }
   };
 
-  const handleAssignClick = (record) => {
-    setSelectedUser(record);
-    setAssignModalVisible(true);
+  const showUserDetails = (user) => {
+    setSelectedUser(user);
+    setVisible(true);
   };
 
   const columns = [
-    { title: 'CIN', dataIndex: 'cin', key: 'cin' },
-    { title: 'Nom', dataIndex: 'nom', key: 'nom' },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
     {
-      title: 'Rôle',
-      dataIndex: 'role',
-      key: 'role',
-      render: (role) =>
-        ({ '0': 'Administrateur', '1': 'Chef de projet', '2': 'Employé' }[role] || 'Inconnu'),
+      title: 'CIN',
+      dataIndex: 'cin',
+      key: 'cin',
+    },
+    {
+      title: 'Nom',
+      dataIndex: 'nom',
+      key: 'nom',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
     },
     {
       title: 'Poste',
@@ -138,11 +143,13 @@ const AssignMembersPage = () => {
       render: (poste) => poste || 'Non spécifié',
     },
     {
-      title: 'Téléphone',
-      dataIndex: 'num_tele',
-      key: 'num_tele',
-      render: (num_tele) => (
-        <span style={{ whiteSpace: 'nowrap' }}>{num_tele || 'Non fourni'}</span>
+      title: 'Disponibilité',
+      dataIndex: 'disponibilitee',
+      key: 'disponibilitee',
+      render: (disponibilitee) => (
+        <Tag color={disponibilitee === 1 ? 'green' : 'red'}>
+          {disponibilitee === 1 ? 'Disponible' : 'Non disponible'}
+        </Tag>
       ),
     },
     {
@@ -150,59 +157,33 @@ const AssignMembersPage = () => {
       key: 'actions',
       render: (_, record) => (
         <Space>
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => {
-              setVisible(true);
-              setSelectedUser(record);
-            }}
-          >
-            Voir
-          </Button>
-          {record.role !== '0' && (
+          <Tooltip title="Voir détails">
             <Button
               icon={<EditOutlined />}
-              type="primary"
-              onClick={() => handleAssignClick(record)}
-            >
-              Assigner
-            </Button>
-          )}
+              onClick={() => showUserDetails(record)}
+            />
+          </Tooltip>
+          <Button
+            type="primary"
+            onClick={() => handleAssignMember(record.cin)}
+            disabled={record.disponibilitee !== 1 || !currentProject}
+          >
+            Assigner
+          </Button>
         </Space>
       ),
     },
   ];
 
-  // Update the assign modal content
   return (
-    <div>
-      {/* Titre principal */}
-      <Title level={2}>Tous les membres</Title>
+    <div style={{ padding: '24px' }}>
+      <Title level={2}>Assigner des Membres au Projet</Title>
 
-      {/* Tableau des utilisateurs */}
-      <Table
-        columns={columns}
-        dataSource={users}
-        rowKey="cin"
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-      />
-
-      {/* Modified Modal for assigning a member */}
-      <Modal
-        title="Assigner un membre"
-        open={assignModalVisible}
-        onOk={handleAssignMember}
-        onCancel={() => setAssignModalVisible(false)}
-        okText="Assigner"
-        cancelText="Annuler"
-      >
-        <div style={{ marginBottom: 16 }}>
-          <Typography.Text strong>Sélectionner un projet:</Typography.Text>
+      {projects.length > 1 && (
+        <div style={{ marginBottom: '24px' }}>
           <Select
-            style={{ width: '100%', marginTop: 8 }}
-            placeholder="Choisir un projet"
-            value={currentProject?.id}
+            placeholder="Sélectionner un projet"
+            style={{ width: 300 }}
             onChange={(value) => {
               const project = projects.find(p => p.id === value);
               setCurrentProject(project);
@@ -215,71 +196,85 @@ const AssignMembersPage = () => {
             ))}
           </Select>
         </div>
-        <Typography.Text>
-          Êtes-vous sûr de vouloir assigner <strong>{selectedUser?.nom}</strong> au projet <strong>{currentProject?.nom_projet}</strong> ?
-        </Typography.Text>
-      </Modal>
+      )}
 
-      {/* Modal pour afficher le profil de l'utilisateur */}
+      {currentProject && (
+        <div style={{ marginBottom: '24px', background: '#f0f2f5', padding: '16px', borderRadius: '8px' }}>
+          <Title level={4}>Projet Sélectionné: {currentProject.nom_projet}</Title>
+          <p>{currentProject.description}</p>
+        </div>
+      )}
+
+      <Table
+        columns={columns}
+        dataSource={users}
+        rowKey="cin"
+        loading={loading}
+        pagination={{ pageSize: 10 }}
+      />
+
       <Modal
-        title={`${selectedUser?.nom} - Profil`}
-        open={visible}
+        title="Détails de l'Utilisateur"
+        visible={visible}
         onCancel={() => setVisible(false)}
         footer={[
-          <Button key="close" onClick={() => setVisible(false)}>
+          <Button key="back" onClick={() => setVisible(false)}>
             Fermer
           </Button>,
+          <Button
+            key="assign"
+            type="primary"
+            onClick={() => {
+              handleAssignMember(selectedUser.cin);
+              setVisible(false);
+            }}
+            disabled={!selectedUser || selectedUser.disponibilitee !== 1 || !currentProject}
+          >
+            Assigner au Projet
+          </Button>,
         ]}
+        width={700}
       >
-        <Row gutter={[16, 16]}>
-          <Col span={8} style={{ textAlign: 'center' }}>
-            <Avatar
-              size={120}
-              src={`http://localhost:5000${selectedUser?.imageUrl}` || 'https://th.bing.com/th/id/OIP.6Ckm4MGXRjZgWQyRkjDDPgHaEK?rs=1&pid=ImgDetMain'}
-            />
-          </Col>
-          <Col span={16}>
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Nom">
-                {selectedUser?.nom}
+        {selectedUser && (
+          <>
+            <Row gutter={[16, 16]}>
+              <Col span={6}>
+                <Avatar size={100} icon={<EditOutlined />} />
+              </Col>
+              <Col span={18}>
+                <Descriptions title="Informations Personnelles" bordered column={1}>
+                  <Descriptions.Item label="Nom">{selectedUser.nom}</Descriptions.Item>
+                  <Descriptions.Item label="CIN">{selectedUser.cin}</Descriptions.Item>
+                  <Descriptions.Item label="Email">
+                    <Space>
+                      <MailOutlined />
+                      {selectedUser.email}
+                    </Space>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Téléphone">
+                    <Space>
+                      <PhoneOutlined />
+                      {selectedUser.num_tele || 'Non spécifié'}
+                    </Space>
+                  </Descriptions.Item>
+                </Descriptions>
+              </Col>
+            </Row>
+
+            <Divider />
+
+            <Descriptions title="Informations Professionnelles" bordered>
+              <Descriptions.Item label="Poste" span={3}>
+                {selectedUser.poste || 'Non spécifié'}
               </Descriptions.Item>
-              <Descriptions.Item label="Poste">
-                <Tag color="processing">{selectedUser?.poste || 'Non spécifié'}</Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Rôle">
-                <Tag
-                  color={
-                    selectedUser?.role === '1'
-                      ? 'blue'
-                      : selectedUser?.role === '2'
-                      ? 'green'
-                      : 'red'
-                  }
-                >
-                  {selectedUser?.role === '0'
-                    ? 'Administrateur'
-                    : selectedUser?.role === '1'
-                    ? 'Chef de projet'
-                    : 'Employé'}
+              <Descriptions.Item label="Disponibilité" span={3}>
+                <Tag color={selectedUser.disponibilitee === 1 ? 'green' : 'red'}>
+                  {selectedUser.disponibilitee === 1 ? 'Disponible' : 'Non disponible'}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Département">
-                {selectedUser?.department || 'Non fourni'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Coordonnées">
-                <Space direction="vertical">
-                  <Tooltip title="Email">
-                    <MailOutlined /> {selectedUser?.email}
-                  </Tooltip>
-                  <Tooltip title="Téléphone">
-                    <PhoneOutlined />{' '}
-                    {selectedUser?.num_tele || 'Non fourni'}
-                  </Tooltip>
-                </Space>
-              </Descriptions.Item>
             </Descriptions>
-          </Col>
-        </Row>
+          </>
+        )}
       </Modal>
     </div>
   );
