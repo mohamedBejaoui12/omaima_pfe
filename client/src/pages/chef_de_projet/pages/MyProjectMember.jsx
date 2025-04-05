@@ -161,7 +161,7 @@ const ProjectMembers = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => navigate('/chef-de-projet/suggest-members')}
+          onClick={() => navigate('/chef-de-projet/all-users')}
         >
           Ajouter des Membres
         </Button>

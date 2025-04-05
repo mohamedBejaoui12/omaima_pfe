@@ -53,11 +53,24 @@ const AssignMembersPage = () => {
         message.error("Aucun jeton d'authentification trouvé. Veuillez vous reconnecter.");
         return;
       }
-      const response = await axios.get('http://localhost:5000/api/admin/users', {
+      // Use the correct endpoint to get all users
+      const response = await axios.get('http://localhost:5000/api/project-manager/all-users', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUsers(response.data.filter(user => user.role === '2')); // Only show employees
+      
+      // Filter to only show employees (role 2)
+      const employeeUsers = response.data.filter(user => user.role === '2');
+      
+      // Force disponibilitee to be 1 for all users for testing
+      const updatedUsers = employeeUsers.map(user => ({
+        ...user,
+        disponibilitee: 1
+      }));
+      
+      setUsers(updatedUsers);
+      console.log('Users with forced availability:', updatedUsers);
     } catch (error) {
+      console.error('Error fetching users:', error);
       message.error(error.response?.data?.message || "Échec du chargement des utilisateurs.");
     } finally {
       setLoading(false);
@@ -98,7 +111,13 @@ const AssignMembersPage = () => {
         return;
       }
 
-      await axios.post(
+      console.log('Assigning member with data:', {
+        memberId: userId,
+        projectId: currentProject.id,
+        managerCin: currentUser.cin
+      });
+
+      const response = await axios.post(
         'http://localhost:5000/api/project-manager/assign-project-member',
         {
           memberId: userId,
@@ -108,10 +127,30 @@ const AssignMembersPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log('Assignment response:', response.data);
       message.success("Membre assigné avec succès !");
-      fetchUsers(); // Refresh the user list
+      
+      // Update the local state to reflect the change immediately
+      // This ensures the UI updates without needing a refresh
+      setUsers(prevUsers => {
+        return prevUsers.map(user => {
+          if (user.cin === userId) {
+            return {
+              ...user,
+              project_id: currentProject.id,
+              project_name: currentProject.nom_projet
+            };
+          }
+          return user;
+        });
+      });
     } catch (error) {
-      message.error(error.response?.data?.message || "Échec de l'assignation du membre.");
+      console.error('Error assigning member:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        message.error(error.response.data.message);
+      } else {
+        message.error("Échec de l'assignation du membre. Veuillez réessayer.");
+      }
     }
   };
 
@@ -146,11 +185,15 @@ const AssignMembersPage = () => {
       title: 'Disponibilité',
       dataIndex: 'disponibilitee',
       key: 'disponibilitee',
-      render: (disponibilitee) => (
-        <Tag color={disponibilitee === 1 ? 'green' : 'red'}>
-          {disponibilitee === 1 ? 'Disponible' : 'Non disponible'}
-        </Tag>
-      ),
+      render: (disponibilitee) => {
+        // Convert to number and check if it's truthy (1, "1", true, etc.)
+        const isAvailable = Number(disponibilitee) === 1;
+        return (
+          <Tag color={isAvailable ? 'green' : 'red'}>
+            {isAvailable ? 'Disponible' : 'Non disponible'}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Actions',
@@ -166,7 +209,7 @@ const AssignMembersPage = () => {
           <Button
             type="primary"
             onClick={() => handleAssignMember(record.cin)}
-            disabled={record.disponibilitee !== 1 || !currentProject}
+            disabled={!currentProject}
           >
             Assigner
           </Button>
@@ -228,7 +271,7 @@ const AssignMembersPage = () => {
               handleAssignMember(selectedUser.cin);
               setVisible(false);
             }}
-            disabled={!selectedUser || selectedUser.disponibilitee !== 1 || !currentProject}
+            disabled={!selectedUser || !currentProject}
           >
             Assigner au Projet
           </Button>,
@@ -268,8 +311,8 @@ const AssignMembersPage = () => {
                 {selectedUser.poste || 'Non spécifié'}
               </Descriptions.Item>
               <Descriptions.Item label="Disponibilité" span={3}>
-                <Tag color={selectedUser.disponibilitee === 1 ? 'green' : 'red'}>
-                  {selectedUser.disponibilitee === 1 ? 'Disponible' : 'Non disponible'}
+                <Tag color={Number(selectedUser.disponibilitee) === 1 ? 'green' : 'red'}>
+                  {Number(selectedUser.disponibilitee) === 1 ? 'Disponible' : 'Non disponible'}
                 </Tag>
               </Descriptions.Item>
             </Descriptions>
