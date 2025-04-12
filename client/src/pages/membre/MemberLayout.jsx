@@ -18,6 +18,7 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons';
 import Cookies from 'js-cookie';
+import logo from '../../assets/logo.png';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -110,18 +111,44 @@ const MemberLayout = ({ userInfo }) => {
         <div
           style={{
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '24px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '0',
+            background: '#1f1f1f',
+            width: '100%',
           }}
         >
+          {/* Logo added here */}
+          <div
+            style={{
+              background: 'white',
+              padding: '15px',
+              marginBottom: '12px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '110px',
+            }}
+          >
+            <img 
+              src={logo}
+              alt="Member Logo" 
+              style={{
+                width: '200px',
+                height: 'auto',
+                objectFit: 'contain',
+              }}
+            />
+          </div>
           <Title
             level={4}
             style={{
               color: '#fff',
-              margin: 0,
+              margin: '0 0 24px 0',
               textAlign: 'center',
+              padding: '0 24px',
             }}
           >
             Espace Membre
@@ -134,7 +161,7 @@ const MemberLayout = ({ userInfo }) => {
           items={menuItems}
           style={{
             background: '#1f1f1f',
-            marginTop: '16px',
+            marginTop: '0',
           }}
         />
       </Sider>

@@ -226,7 +226,7 @@ const CompetencesPage = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={editMode ? handleUpdate : handleCreate}
+          onFinish={handleModalOk}
         >
           <Form.Item
             name="nom_competence"

@@ -18,6 +18,7 @@ import {
   QuestionCircleOutlined, // Add this import for the support tickets icon
 } from '@ant-design/icons';
 import Cookies from 'js-cookie';
+import logo from '../../../assets/logo.png';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -116,19 +117,45 @@ const AdminLayout = () => {
         <div
           style={{
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '24px',
+            padding: '0',
             background: '#1f1f1f',
+            width: '100%',
           }}
         >
+          {/* Logo added here */}
+          <div
+            style={{
+              background: 'white',
+              padding: '15px',
+              marginBottom: '12px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '110px',
+            }}
+          >
+            <img 
+              src={logo}
+              alt="Admin Logo" 
+              style={{
+                width: '200px',
+                height: 'auto',
+                objectFit: 'contain',
+              }}
+            />
+          </div>
           <Title
             level={3}
             style={{
               color: '#ffffff',
-              margin: 0,
+              margin: '0 0 24px 0',
               fontWeight: 'bold',
               letterSpacing: '1px',
+              padding: '0 24px',
             }}
           >
             Admin Panel
