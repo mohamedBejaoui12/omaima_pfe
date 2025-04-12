@@ -114,3 +114,55 @@ exports.deletePV = async (req, res) => {
     if (connection) connection.release();
   }
 };
+
+// Add new download controller method
+exports.downloadPV = async (req, res) => {
+  const { pvId } = req.params;
+  let connection;
+
+  try {
+    connection = await db.getConnection();
+
+    // Get PV details
+    const [pv] = await connection.query('SELECT * FROM project_pv WHERE id = ?', [pvId]);
+    
+    if (pv.length === 0) {
+      return res.status(404).json({ message: 'PV non trouvé' });
+    }
+
+    const pvRecord = pv[0];
+    
+    // Check if file exists
+    const filePath = pvRecord.file_path;
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'Fichier non trouvé sur le serveur' });
+    }
+
+    // Send file
+    res.download(filePath, pvRecord.file_name, (err) => {
+      if (err) {
+        console.error('Download error:', err);
+        return res.status(500).json({ message: 'Erreur lors du téléchargement du fichier' });
+      }
+    });
+  } catch (error) {
+    console.error('Download PV Error:', error);
+    res.status(500).json({ message: 'Erreur lors du téléchargement du PV' });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// Add direct file access method
+exports.getFile = (req, res) => {
+  const { filename } = req.params;
+  const filePath = path.join(__dirname, '../../uploads/pv', filename);
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'Fichier non trouvé' });
+  }
+  
+  // Send file
+  res.sendFile(filePath);
+};

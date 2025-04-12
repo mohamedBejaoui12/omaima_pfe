@@ -57,21 +57,67 @@ function ProjectPVs() {
   const handleDownloadPV = async (pvId, fileName) => {
     try {
       const token = Cookies.get('token');
-      const response = await axios.get(`http://localhost:5000/api/pv/download/${pvId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      message.loading({ content: 'Téléchargement en cours...', key: 'download' });
+      
+      console.log('Download attempt for:', { pvId, fileName });
+      
+      // Direct approach using axios with proper authorization
+      const response = await axios({
+        method: 'GET',
+        url: `http://localhost:5000/api/pv/download/${pvId}`,
+        headers: { 
+          Authorization: `Bearer ${token}`
+        },
         responseType: 'blob',
       });
-
-      // Create a blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      // Create a blob from the response data
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] || 'application/octet-stream' 
+      });
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link element
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', fileName || 'pv-document.pdf');
+      link.setAttribute('download', fileName);
+      
+      // Append to the document, click, and clean up
       document.body.appendChild(link);
       link.click();
-      link.remove();
+      
+      // Clean up
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      }, 100);
+      
+      message.success({ content: 'Téléchargement réussi!', key: 'download' });
     } catch (error) {
-      message.error("Échec du téléchargement du PV");
+      console.error('Erreur de téléchargement:', error);
+      
+      // Try alternative method with token in URL
+      try {
+        message.info({ content: 'Tentative de téléchargement alternatif...', key: 'download' });
+        
+        // Create a direct link with token as query parameter
+        const directUrl = `http://localhost:5000/uploads/pv/${fileName}?token=${token}`;
+        
+        // Open in new window
+        window.open(directUrl, '_blank');
+        
+        message.success({ 
+          content: 'Nouvelle fenêtre ouverte pour le téléchargement', 
+          key: 'download' 
+        });
+      } catch (altError) {
+        message.error({ 
+          content: "Échec du téléchargement du PV. Veuillez contacter l'administrateur.", 
+          key: 'download' 
+        });
+      }
     }
   };
 

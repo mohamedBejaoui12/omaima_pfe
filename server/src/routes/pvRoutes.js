@@ -22,5 +22,9 @@ router.post('/upload', authenticateToken, upload.single('pvFile'), pvController.
 // Add this route to get PVs for a specific project
 router.get('/project/:projectId', authenticateToken, pvController.getProjectPVs);
 router.delete('/:pvId', authenticateToken, pvController.deletePV);
+// Add download route
+router.get('/download/:pvId', authenticateToken, pvController.downloadPV);
+// Add direct file access route
+router.get('/files/:filename', pvController.getFile);
 
 module.exports = router;

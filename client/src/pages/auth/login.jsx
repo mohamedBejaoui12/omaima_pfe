@@ -14,24 +14,56 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { styled } from '@mui/system';
+import logo from '../../assets/logo.png'; // Import the logo
+import backgroundImage from '../../assets/background.jpg'; // Import the background image
 
 const AuthContainer = styled(Container)(({ theme }) => ({
   minHeight: '100vh',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'linear-gradient(135deg, #f0f9ff 0%, #e6f4ff 100%)',
+  position: 'relative',
+  backgroundImage: `url(${backgroundImage})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)', // Reduced opacity from 0.4 to 0.2
+    zIndex: 1
+  }
 }));
 
+// Update the LogoContainer to ensure it's above the overlay
+const LogoContainer = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '20px',
+  left: '20px',
+  background: 'white',
+  padding: '15px',
+  borderRadius: '8px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+  zIndex: 2 // Ensure logo is above the overlay
+}));
+
+// Update the FormContainer to ensure it's above the overlay
 const FormContainer = styled(Box)(({ theme }) => ({
   backgroundColor: 'white',
   padding: theme.spacing(4),
   borderRadius: '16px',
-  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
   border: '1px solid #e0e7ff',
   width: '100%',
   maxWidth: '440px',
   transition: 'transform 0.3s ease',
+  position: 'relative',
+  zIndex: 2, // Ensure form is above the overlay
   '&:hover': {
     transform: 'translateY(-2px)'
   }
@@ -202,6 +234,19 @@ function Login() {
 
   return (
     <AuthContainer maxWidth={false}>
+      {/* Logo added here */}
+      <LogoContainer>
+        <img 
+          src={logo} 
+          alt="Company Logo" 
+          style={{ 
+            width: '200px',  // Increased from 150px to 200px
+            height: 'auto',
+            objectFit: 'contain'
+          }} 
+        />
+      </LogoContainer>
+
       <FormContainer>
         <Title variant="h4">
           Connexion
