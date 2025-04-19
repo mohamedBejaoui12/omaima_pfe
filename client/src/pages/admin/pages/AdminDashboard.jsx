@@ -85,60 +85,96 @@ const AdminDashboard = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+
+        console.log('Raw data from backend:', response.data);
         
-        // Mock additional data for demonstration
-        // In production, these would come from the API
-        const enhancedData = {
-          ...response.data,
-          usersByRole: [
-            { name: 'Administrateurs', value: response.data.usersByRole?.admin || 5 },
-            { name: 'Chefs de Projet', value: response.data.usersByRole?.projectManager || 12 },
-            { name: 'Membres', value: response.data.usersByRole?.member || response.data.totalUsers - 17 }
-          ],
-          projectsOverTime: response.data.projectsOverTime || [
-            { month: 'Jan', projects: 5 },
-            { month: 'Fév', projects: 8 },
-            { month: 'Mar', projects: 12 },
-            { month: 'Avr', projects: 15 },
-            { month: 'Mai', projects: 20 },
-            { month: 'Juin', projects: 22 },
-            { month: 'Juil', projects: 25 },
-            { month: 'Août', projects: 28 },
-            { month: 'Sep', projects: 30 },
-            { month: 'Oct', projects: 32 },
-            { month: 'Nov', projects: 35 },
-            { month: 'Déc', projects: response.data.totalProjects }
-          ],
-          competencyDistribution: response.data.competencyDistribution || [
-            { name: 'React', count: 18 },
-            { name: 'Node.js', count: 15 },
-            { name: 'Python', count: 12 },
-            { name: 'Java', count: 10 },
-            { name: 'Angular', count: 8 },
-            { name: 'Vue.js', count: 7 }
-          ],
-          userActivity: response.data.userActivity || [
-            { date: '2023-01', active: 15, inactive: 5 },
-            { date: '2023-02', active: 18, inactive: 4 },
-            { date: '2023-03', active: 20, inactive: 3 },
-            { date: '2023-04', active: 25, inactive: 2 },
-            { date: '2023-05', active: 30, inactive: 2 },
-            { date: '2023-06', active: 35, inactive: 1 }
-          ],
-          recentProjects: response.data.recentProjects || [
-            { id: 1, nom_projet: 'Plateforme E-learning', statut: 'en cours', date_debut: '2023-10-15' },
-            { id: 2, nom_projet: 'Application Mobile', statut: 'terminé', date_debut: '2023-09-01' },
-            { id: 3, nom_projet: 'Système CRM', statut: 'en cours', date_debut: '2023-11-10' },
-            { id: 4, nom_projet: 'Refonte Site Web', statut: 'annulé', date_debut: '2023-08-20' }
-          ],
-          recentUsers: response.data.recentUsers || [
-            { cin: 'AB123456', nom: 'Sophie Martin', email: 'sophie@example.com', role: '1', date_creation: '2023-11-15' },
-            { cin: 'CD789012', nom: 'Thomas Dubois', email: 'thomas@example.com', role: '2', date_creation: '2023-11-10' },
-            { cin: 'EF345678', nom: 'Emma Bernard', email: 'emma@example.com', role: '2', date_creation: '2023-11-05' }
-          ]
-        };
+        // Get the basic stats from the response
+        const basicStats = response.data || {};
         
-        setStats(enhancedData);
+        // Fetch additional data for charts and tables
+        const usersResponse = await axios.get('http://localhost:5000/api/admin/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        const projectsResponse = await axios.get('http://localhost:5000/api/admin/projects', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        // Instead of making separate API calls for competency data,
+        // let's modify to use the data we already have or can get from existing endpoints
+        
+        console.log('Users data:', usersResponse.data);
+        console.log('Projects data:', projectsResponse.data);
+        
+        // Process users and projects data
+        const users = usersResponse.data || [];
+        const projects = projectsResponse.data || [];
+        
+        // Count users by role
+        const usersByRole = [
+          { name: 'Admin', value: users.filter(user => user.role === '0').length },
+          { name: 'Chef de Projet', value: users.filter(user => user.role === '1').length },
+          { name: 'Membre', value: users.filter(user => user.role === '2').length }
+        ];
+        
+        // Create project status data for pie chart
+        const projectStatusData = [
+          { name: 'En Cours', value: basicStats.projectStatus?.enCours || 0 },
+          { name: 'Terminés', value: basicStats.projectStatus?.terminer || 0 },
+          { name: 'Annulés', value: basicStats.projectStatus?.annuler || 0 }
+        ];
+        
+        // Create projects over time data (by month)
+        const projectsByMonth = {};
+        projects.forEach(project => {
+          if (project.date_debut) {
+            const date = new Date(project.date_debut);
+            const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+            projectsByMonth[monthYear] = (projectsByMonth[monthYear] || 0) + 1;
+          }
+        });
+        
+        const projectsOverTime = Object.keys(projectsByMonth).map(month => ({
+          month,
+          projects: projectsByMonth[month]
+        })).sort((a, b) => {
+          const [aMonth, aYear] = a.month.split('/');
+          const [bMonth, bYear] = b.month.split('/');
+          return new Date(aYear, aMonth - 1) - new Date(bYear, bMonth - 1);
+        });
+        
+        // Create user activity data (active vs inactive)
+        const activeUsers = users.filter(user => user.disponibilitee === 1).length;
+        const inactiveUsers = users.length - activeUsers;
+        
+        const userActivity = [
+          { date: 'Actuel', active: activeUsers, inactive: inactiveUsers }
+        ];
+        
+        // Check if competency data is available in the dashboard stats
+        let competencyDistribution = [];
+        if (basicStats.competencyDistribution) {
+          competencyDistribution = basicStats.competencyDistribution;
+        } else {
+          // If not available, we'll leave it empty for now
+          // The backend should be updated to include this data
+          console.log('Competency distribution data not available in dashboard stats');
+        }
+        
+        // Combine all data
+        setStats({
+          totalUsers: basicStats.totalUsers || 0,
+          totalProjects: basicStats.totalProjects || 0,
+          projectStatus: basicStats.projectStatus || { enCours: 0, annuler: 0, terminer: 0 },
+          usersByRole,
+          projectStatusData,
+          projectsOverTime,
+          recentProjects: projects.slice(0, 5), // Get 5 most recent
+          recentUsers: users.slice(0, 5), // Get 5 most recent
+          userActivity,
+          competencyDistribution
+        });
+        
         setLoading(false);
       } catch (error) {
         console.error(
@@ -153,15 +189,20 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
-  // Format data for project status pie chart
-  const projectStatusData = [
-    { name: 'En Cours', value: stats.projectStatus.enCours },
-    { name: 'Terminés', value: stats.projectStatus.terminer },
-    { name: 'Annulés', value: stats.projectStatus.annuler }
+  // Use the project status data we created
+  const projectStatusData = stats.projectStatusData || [
+    { name: 'En Cours', value: stats.projectStatus?.enCours || 0 },
+    { name: 'Terminés', value: stats.projectStatus?.terminer || 0 },
+    { name: 'Annulés', value: stats.projectStatus?.annuler || 0 }
   ];
 
-  // Table columns for recent projects
+  // Table columns for recent projects - using exact database field names
   const projectColumns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
     {
       title: 'Nom du Projet',
       dataIndex: 'nom_projet',
@@ -173,23 +214,30 @@ const AdminDashboard = () => {
       key: 'statut',
       render: (statut) => {
         let color = PROJECT_STATUS_COLORS[statut] || 'default';
-        let text = statut === 'en cours' ? 'En cours' : 
-                  statut === 'terminé' ? 'Terminé' : 
-                  statut === 'annulé' ? 'Annulé' : 'Inconnu';
-        
-        return <Tag color={color}>{text}</Tag>;
+        return <Tag color={color}>{statut}</Tag>;
       }
     },
     {
       title: 'Date de Début',
-      dataIndex: 'date_debut',
-      key: 'date_debut',
-      render: (date) => new Date(date).toLocaleDateString('fr-FR')
+      dataIndex: 'delai',
+      key: 'delai',
+      render: (date) => date ? new Date(date).toLocaleDateString('fr-FR') : 'N/A'
+    },
+    {
+      title: 'Budget',
+      dataIndex: 'budget',
+      key: 'budget',
+      render: (budget) => `${budget} €`
     }
   ];
 
-  // Table columns for recent users
+  // Table columns for recent users - using exact database field names
   const userColumns = [
+    {
+      title: 'CIN',
+      dataIndex: 'cin',
+      key: 'cin',
+    },
     {
       title: 'Nom',
       dataIndex: 'nom',
@@ -201,21 +249,27 @@ const AdminDashboard = () => {
       key: 'email',
     },
     {
+      title: 'Poste',
+      dataIndex: 'poste',
+      key: 'poste',
+    },
+    {
       title: 'Rôle',
       dataIndex: 'role',
       key: 'role',
       render: (role) => {
         let color = role === '0' ? 'red' : role === '1' ? 'blue' : 'green';
         let text = role === '0' ? 'Admin' : role === '1' ? 'Chef de Projet' : 'Membre';
-        
         return <Tag color={color}>{text}</Tag>;
       }
     },
     {
-      title: 'Date d\'inscription',
-      dataIndex: 'date_creation',
-      key: 'date_creation',
-      render: (date) => new Date(date).toLocaleDateString('fr-FR')
+      title: 'Disponibilité',
+      dataIndex: 'disponibilitee',
+      key: 'disponibilitee',
+      render: (disponible) => disponible ? 
+        <Tag color="green">Disponible</Tag> : 
+        <Tag color="red">Non Disponible</Tag>
     }
   ];
 
@@ -385,7 +439,7 @@ const AdminDashboard = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={stats.usersByRole}
+                      data={stats.usersByRole || []}
                       cx="50%"
                       cy="50%"
                       labelLine={true}
@@ -394,7 +448,7 @@ const AdminDashboard = () => {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {stats.usersByRole.map((entry, index) => (
+                      {(stats.usersByRole || []).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -405,111 +459,6 @@ const AdminDashboard = () => {
               </Card>
             </Col>
           </Row>
-        </TabPane>
-
-        <TabPane 
-          tab={<span><LineChartOutlined /> Tendances</span>} 
-          key="2"
-        >
-          <Row gutter={[24, 24]}>
-            {/* Projects Over Time */}
-            <Col xs={24} lg={12}>
-              <Card 
-                title="Évolution des Projets" 
-                bordered={false}
-                style={{ borderRadius: '12px', height: '100%' }}
-              >
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={stats.projectsOverTime}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="projects" 
-                      name="Projets" 
-                      stroke="#8884d8" 
-                      activeDot={{ r: 8 }} 
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Card>
-            </Col>
-
-            {/* User Activity */}
-            <Col xs={24} lg={12}>
-              <Card 
-                title="Activité des Utilisateurs" 
-                bordered={false}
-                style={{ borderRadius: '12px', height: '100%' }}
-              >
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart
-                    data={stats.userActivity}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Area 
-                      type="monotone" 
-                      dataKey="active" 
-                      name="Utilisateurs Actifs" 
-                      stackId="1"
-                      stroke="#82ca9d" 
-                      fill="#82ca9d" 
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="inactive" 
-                      name="Utilisateurs Inactifs" 
-                      stackId="1"
-                      stroke="#ffc658" 
-                      fill="#ffc658" 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </Card>
-            </Col>
-          </Row>
-        </TabPane>
-
-        <TabPane 
-          tab={<span><BarChartOutlined /> Compétences</span>} 
-          key="3"
-        >
-          <Card 
-            title="Distribution des Compétences" 
-            bordered={false}
-            style={{ borderRadius: '12px' }}
-          >
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart
-                data={stats.competencyDistribution}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar 
-                  dataKey="count" 
-                  name="Nombre d'Utilisateurs" 
-                  fill="#8884d8" 
-                  barSize={40}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
         </TabPane>
       </Tabs>
 
@@ -533,13 +482,16 @@ const AdminDashboard = () => {
             bordered={false}
             style={{ borderRadius: '12px', height: '100%' }}
           >
-            <Table 
-              columns={projectColumns} 
-              dataSource={stats.recentProjects} 
-              rowKey="id"
-              pagination={false}
-              size="small"
-            />
+            <div style={{ overflowX: 'auto' }}>
+              <Table 
+                columns={projectColumns} 
+                dataSource={stats.recentProjects || []} 
+                rowKey="id"
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            </div>
           </Card>
         </Col>
 
@@ -556,13 +508,16 @@ const AdminDashboard = () => {
             bordered={false}
             style={{ borderRadius: '12px', height: '100%' }}
           >
-            <Table 
-              columns={userColumns} 
-              dataSource={stats.recentUsers} 
-              rowKey="cin"
-              pagination={false}
-              size="small"
-            />
+            <div style={{ overflowX: 'auto' }}>
+              <Table 
+                columns={userColumns} 
+                dataSource={stats.recentUsers || []} 
+                rowKey="cin"
+                pagination={false}
+                size="small"
+                scroll={{ x: 'max-content' }}
+              />
+            </div>
           </Card>
         </Col>
       </Row>
