@@ -20,14 +20,14 @@ const ChefDeProjetDashboard = () => {
 
   const dashboardCards = [
     {
-      title: 'Gérer les Membres',
+      title: 'Gérer les Employées',
       icon: <TeamOutlined style={{ fontSize: '36px', color: '#1890ff' }} />,
       description: 'Voir et gérer les membres de votre projet',
       path: '/chef-de-projet/members',
       color: '#e6f7ff',
     },
     {
-      title: 'Suggérer des Membres',
+      title: 'Suggérer des Employées',
       icon: <TeamOutlined style={{ fontSize: '36px', color: '#52c41a' }} />,
       description: 'Trouver des membres adaptés à votre projet',
       path: '/chef-de-projet/suggest-members',

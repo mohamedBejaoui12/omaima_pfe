@@ -61,7 +61,7 @@ const AdminLayout = () => {
     {
       key: 'add-member',
       icon: <UserAddOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/add-member">Ajouter un Membre</Link>,
+      label: <Link to="/admin/add-member">Ajouter un employée</Link>,
     },
     {
       key: 'manage-users',
@@ -69,15 +69,16 @@ const AdminLayout = () => {
       label: <Link to="/admin/manage-users">Gérer les Utilisateurs</Link>,
     },
     {
-      key: 'manage-projects',
-      icon: <ProjectOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/admin/manage-projects">Gérer les Projets</Link>,
-    },
-    {
       key: 'manage-competences',
       icon: <ProjectOutlined style={{ fontSize: '20px' }} />,
       label: <Link to="/admin/manage-competences">Gérer les Compétences</Link>,
     },
+    {
+      key: 'manage-projects',
+      icon: <ProjectOutlined style={{ fontSize: '20px' }} />,
+      label: <Link to="/admin/manage-projects">Gérer les Projets</Link>,
+    },
+    
     {
       key: 'support-tickets',
       icon: <QuestionCircleOutlined style={{ fontSize: '20px' }} />,

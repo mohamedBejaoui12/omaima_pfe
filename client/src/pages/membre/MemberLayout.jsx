@@ -151,7 +151,7 @@ const MemberLayout = ({ userInfo }) => {
               padding: '0 24px',
             }}
           >
-            Espace Membre
+            Espace Employée
           </Title>
         </div>
         <Menu
@@ -195,7 +195,7 @@ const MemberLayout = ({ userInfo }) => {
                 src={userInfo?.imageUrl ? `http://localhost:5000${userInfo.imageUrl}` : null}
                 icon={!userInfo?.imageUrl && <UserOutlined />}
               />
-              <span>{userInfo?.nom || 'Membre'}</span>
+              <span>{userInfo?.nom || 'Employée'}</span>
             </Space>
           </Dropdown>
         </Header>

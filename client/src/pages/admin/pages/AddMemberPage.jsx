@@ -98,10 +98,10 @@ const AddMemberPage = () => {
             color: '#1890ff',
           }}
         >
-          Ajouter un Nouveau Membre
+          Ajouter un Nouveau Employée
         </Title>
         <Text type="secondary" style={{ fontSize: '16px' }}>
-          Remplissez les détails ci-dessous pour enregistrer un nouveau membre
+          Remplissez les détails ci-dessous pour enregistrer un nouveau employée
         </Text>
       </div>
 

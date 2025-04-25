@@ -157,13 +157,13 @@ const ProjectMembers = () => {
   return (
     <div style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <Title level={2}>Membres de Mon Projet</Title>
+        <Title level={2}>employées de Mon Projet</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => navigate('/chef-de-projet/all-users')}
         >
-          Ajouter des Membres
+          Ajouter des employées
         </Button>
       </div>
 
@@ -183,7 +183,7 @@ const ProjectMembers = () => {
         okText="Confirmer"
         cancelText="Annuler"
       >
-        <p>Êtes-vous sûr de vouloir supprimer ce membre du projet ?</p>
+        <p>Êtes-vous sûr de vouloir supprimer ce employée du projet ?</p>
       </Modal>
     </div>
   );

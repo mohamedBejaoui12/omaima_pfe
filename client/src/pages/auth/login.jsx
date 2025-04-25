@@ -295,7 +295,7 @@ function Login() {
             >
               <MenuItem value="0">Administrateur</MenuItem>
               <MenuItem value="1">Chef de Projet</MenuItem>
-              <MenuItem value="2">Membre</MenuItem>
+              <MenuItem value="2">Employée</MenuItem>
             </Select>
           </FormControl>
 

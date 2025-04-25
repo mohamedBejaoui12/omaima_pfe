@@ -87,37 +87,18 @@ function ProjectPVs() {
       // Append to the document, click, and clean up
       document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       
-      // Clean up
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(link);
-      }, 100);
+      // Clean up the URL object
+      window.URL.revokeObjectURL(url);
       
       message.success({ content: 'Téléchargement réussi!', key: 'download' });
     } catch (error) {
       console.error('Erreur de téléchargement:', error);
-      
-      // Try alternative method with token in URL
-      try {
-        message.info({ content: 'Tentative de téléchargement alternatif...', key: 'download' });
-        
-        // Create a direct link with token as query parameter
-        const directUrl = `http://localhost:5000/uploads/pv/${fileName}?token=${token}`;
-        
-        // Open in new window
-        window.open(directUrl, '_blank');
-        
-        message.success({ 
-          content: 'Nouvelle fenêtre ouverte pour le téléchargement', 
-          key: 'download' 
-        });
-      } catch (altError) {
-        message.error({ 
-          content: "Échec du téléchargement du PV. Veuillez contacter l'administrateur.", 
-          key: 'download' 
-        });
-      }
+      message.error({ 
+        content: "Échec du téléchargement du PV. Veuillez contacter l'administrateur.", 
+        key: 'download' 
+      });
     }
   };
 

@@ -60,12 +60,12 @@ const ChefDeProjetLayout = () => {
     {
       key: 'suggest-members',
       icon: <UserAddOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/chef-de-projet/suggest-members">Suggérer des membres</Link>,
+      label: <Link to="/chef-de-projet/suggest-members">Suggérer des employée</Link>,
     },
     {
       key: 'members',
       icon: <TeamOutlined style={{ fontSize: '20px' }} />,
-      label: <Link to="/chef-de-projet/members">Membres de mon projet</Link>,
+      label: <Link to="/chef-de-projet/members">employées de mon projet</Link>,
     },
     {
       key: 'projets',
@@ -204,7 +204,7 @@ const ChefDeProjetLayout = () => {
                 icon={<UserAddOutlined />}
               />
               <span style={{ marginLeft: '8px', fontWeight: '500' }}>
-                Mon Profil
+                chef de projet
               </span>
             </Space>
           </Dropdown>

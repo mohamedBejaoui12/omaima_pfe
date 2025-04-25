@@ -220,7 +220,7 @@ const AssignMembersPage = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <Title level={2}>Assigner des Membres au Projet</Title>
+      <Title level={2}>Assigner des Employée au Projet</Title>
 
       {projects.length > 1 && (
         <div style={{ marginBottom: '24px' }}>

@@ -269,7 +269,7 @@ const ProjectDetails = () => {
               label="Project Name"
               rules={[{ required: true, message: 'Please input project name' }]}
             >
-              <Input placeholder="Enter project name" />
+              <Input placeholder="Enter project name" disabled />
             </Form.Item>
           </Col>
 
@@ -303,7 +303,7 @@ const ProjectDetails = () => {
               label="Budget"
               rules={[{ required: true, message: 'Please input project budget' }]}
             >
-              <InputNumber
+              <InputNumber disabled
                 style={{ width: '100%' }}
                 min={0}
                 formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
@@ -319,7 +319,7 @@ const ProjectDetails = () => {
               label="Project Description"
               rules={[{ required: true, message: 'Please input project description' }]}
             >
-              <TextArea rows={4} placeholder="Enter project description" />
+              <TextArea rows={4} placeholder="Enter project description" disabled />
             </Form.Item>
           </Col>
 
@@ -328,7 +328,7 @@ const ProjectDetails = () => {
               name="competence_ids"
               label="Required Competences"
             >
-              <Select mode="multiple" placeholder="Select required competences">
+              <Select mode="multiple" placeholder="Select required competences" disabled >
                 {competences.map((comp) => (
                   <Option key={comp.id} value={comp.id.toString()}>
                     {comp.nom_competence}
